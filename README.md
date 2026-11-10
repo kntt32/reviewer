@@ -22,14 +22,16 @@ Node.js 24 で `npm test`、`npm run build`。依存パッケージ不要。`src
 
 mainへのpushでテスト・単一HTMLのビルドを行い、`kntt32/kntt-pages-dev` の `tools/reviewer.html` のみ更新してcodex名義でpushします。GitHub ActionsのArtifactsからもHTMLを取得できます。
 
-初回のみ次を設定してください（このセッションのGitHub権限ではSecretsを設定できませんでした）。
+初回のみ次を設定してください。
 
-1. 専用SSH鍵ペアを生成する。
-2. 公開鍵を **kntt32/kntt-pages-dev → Settings → Deploy keys** に登録し、Allow write accessを有効にする。
-3. 秘密鍵を **kntt32/reviewer → Settings → Secrets and variables → Actions** に `PAGES_DEPLOY_KEY` として登録する。
-4. ReviewerのActionsで **Build and copy Reviewer → Run workflow** を実行する。
+1. Fine-grained personal access token を作成し、対象リポジトリに **kntt32/kntt-pages-dev** を選択する。
+2. Repository permissions の **Contents: Read and write** を付与する（Metadataの読み取りは自動で含まれます）。
+3. PAT を **kntt32/reviewer → Settings → Secrets and variables → Actions** に `PAGES_DEPLOY_KEY` として登録する。既存のSecret名を維持していますが、値はSSH秘密鍵ではなくPATです。
+4. ReviewerのActionsで **Build and copy Reviewer → Run workflow** を実行する。以後はmainへのpushで自動実行される。
 
-秘密鍵をファイルやチャットに公開しないでください。宛先ブランチの保護規則が直接pushを禁止する場合は、専用鍵に許可するかPR経由の運用へ調整してください。
+checkoutには `token: ${{ secrets.PAGES_DEPLOY_KEY }}` を指定し、HTTPSで宛先のmainを取得・更新します。Reviewer自身のcheckoutには通常のGITHUB_TOKENを使います。
+
+トークンをファイルやチャットに公開しないでください。PATの有効期限切れには更新が必要です。宛先ブランチの保護規則が直接pushを禁止する場合は、PR経由の運用へ調整してください。
 
 ## 学習の中断・再開
 

@@ -25,7 +25,7 @@ jobs:
         with:
           repository: kntt32/kntt-pages-dev
           ref: main
-          ssh-key: ${{ secrets.PAGES_DEPLOY_KEY }}
+          token: ${{ secrets.PAGES_DEPLOY_KEY }}
           path: pages
       - name: Copy single HTML and push
         run: |
