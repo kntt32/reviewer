@@ -1,0 +1,17 @@
+{
+  "name": "Reviewer",
+  "short_name": "Reviewer",
+  "description": "学習セット・単語カード・クイズによる復習",
+  "start_url": "./reviewer.html",
+  "display": "standalone",
+  "background_color": "#f6f7fa",
+  "theme_color": "#305dc5",
+  "icons": [
+    {
+      "src": "./reviewer-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

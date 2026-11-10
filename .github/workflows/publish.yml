@@ -1,0 +1,40 @@
+name: Build and copy Reviewer
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: publish-reviewer
+  cancel-in-progress: false
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: npm test && npm run build
+      - uses: actions/upload-artifact@v4
+        with:
+          name: reviewer
+          path: dist/reviewer.html
+      - uses: actions/checkout@v4
+        with:
+          repository: kntt32/kntt-pages-dev
+          ssh-key: ${{ secrets.PAGES_DEPLOY_KEY }}
+          path: pages
+      - name: Copy single HTML and push
+        run: |
+          cp dist/reviewer.html pages/tools/reviewer.html
+          cd pages
+          git config user.name codex
+          git config user.email codex@users.noreply.github.com
+          git add tools/reviewer.html
+          if ! git diff --cached --quiet; then
+            git commit -m "Update Reviewer from kntt32/reviewer"
+            git pull --rebase origin
+            git push
+          fi

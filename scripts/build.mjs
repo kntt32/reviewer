@@ -1,0 +1,10 @@
+import {readFile,writeFile,mkdir} from 'node:fs/promises';
+const source=await readFile(new URL('../src/reviewer.html',import.meta.url),'utf8');
+const icon=await readFile(new URL('../reviewer-icon.svg',import.meta.url));
+const manifest=JSON.parse(await readFile(new URL('../reviewer.webmanifest',import.meta.url),'utf8'));
+const iconUrl='data:image/svg+xml;base64,'+icon.toString('base64');
+manifest.icons[0].src=iconUrl;
+const html=source.replace('./reviewer-icon.svg',iconUrl).replace('./reviewer.webmanifest','data:application/manifest+json;base64,'+Buffer.from(JSON.stringify(manifest)).toString('base64'));
+await mkdir(new URL('../dist/',import.meta.url),{recursive:true});
+await writeFile(new URL('../dist/reviewer.html',import.meta.url),html);
+console.log('Built dist/reviewer.html');
