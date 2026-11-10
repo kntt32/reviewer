@@ -1,6 +1,6 @@
 # Reviewer
 
-- Commit as `codex` (`codex@users.noreply.github.com`).
+- Commit using the acting agent's name (for example, `codex`) and a corresponding author identity.
 - Preserve existing Japanese UI, flashcards, quizzes, import/export, and learning history.
 - Keep localStorage key `kntt.reviewer.v2` and compatibility with existing local sets.
 - Edit `src/reviewer.html`; run `npm test` and `npm run build` before committing.
