@@ -107,82 +107,132 @@ body:has(#cards.active,#quiz.active)>main.wrap{
  .quiz-choices{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
 
-/* Two-pane workspace. The sidebar owns navigation; study fills the right pane. */
-:root{--sidebar-bg:#eef0f4}
-@media(prefers-color-scheme:dark){:root{--sidebar-bg:#171f2a}}
+/* Compact two-pane workspace. */
+:root{--bg:#fff;--panel:#fff;--sidebar-bg:#f6f6f6;--text:#272727;--muted:#747474;--line:#e7e7e7;--accent:#292929;--soft:#ededed;--sidebar-width:260px;--motion:240ms;--ease:cubic-bezier(.2,.75,.25,1)}
+@media(prefers-color-scheme:dark){:root{--bg:#212121;--panel:#212121;--sidebar-bg:#181818;--text:#ececec;--muted:#a1a1a1;--line:#383838;--accent:#ececec;--soft:#303030}}
 button,a,input,select,textarea,summary,label,.flash,.quiz-choices{touch-action:manipulation}
+button,input,textarea,select{border-radius:8px}
+button{transition:background-color 140ms ease,border-color 140ms ease,color 140ms ease}
+button:hover:not(:disabled){background:var(--soft)}
+.primary{background:var(--accent);color:var(--bg)}
+.primary:hover:not(:disabled){background:var(--accent);opacity:.85}
+button:focus-visible,a:focus-visible,summary:focus-visible{outline:2px solid var(--muted);outline-offset:3px}
 body,body:has(#cards.active,#quiz.active){height:100dvh;min-height:0;display:block;overflow:hidden}
-.app-shell{height:100%;display:flex;overflow:hidden}
-#sidebar{width:280px;flex:0 0 280px;background:var(--sidebar-bg);border-right:1px solid var(--line);padding:16px 12px;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin}
-.sidebar-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:20px;padding-left:10px}
-.sidebar-head .home-link{font-size:1.18rem;font-weight:700}
-.sidebar-head .icon-btn{background:transparent;border:0;color:var(--muted)}
-.home-actions{display:flex;flex-direction:column;gap:5px;margin:0 0 18px}
-.home-actions button{justify-content:flex-start;gap:12px;border:0;border-radius:9px;background:transparent;color:var(--text);padding:11px 12px;font-size:.94rem;white-space:normal;text-align:left}
+.app-shell{height:100%;display:grid;grid-template-columns:var(--sidebar-width) minmax(0,1fr);overflow:hidden;transition:grid-template-columns var(--motion) var(--ease)}
+.sidebar-rail{min-width:0;overflow:hidden;background:var(--sidebar-bg);visibility:visible;transition:visibility 0s}
+#sidebar{width:var(--sidebar-width);height:100%;background:var(--sidebar-bg);padding:10px 8px;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;opacity:1;transform:translateX(0);transition:opacity 160ms ease,transform var(--motion) var(--ease)}
+.sidebar-head{display:flex;align-items:center;justify-content:space-between;gap:6px;margin:0 2px 8px;padding-left:8px;min-height:34px}
+.sidebar-head .home-link{font-size:1rem;font-weight:650}
+.sidebar-head-tools{display:flex;align-items:center;gap:2px}
+.sidebar-head .icon-btn,.workspace-header .icon-btn{background:transparent;border:0;color:var(--muted);min-height:32px;min-width:32px;padding:6px}
+#sidebarToggleSlot,#workspaceToggleSlot{display:flex}
+#workspaceToggleSlot:empty{display:none}
+.search-disclosure{display:grid;grid-template-rows:0fr;opacity:0;visibility:hidden;transition:grid-template-rows 180ms var(--ease),opacity 160ms ease,visibility 0s 180ms}
+.search-disclosure.open{grid-template-rows:1fr;opacity:1;visibility:visible;transition:grid-template-rows 180ms var(--ease),opacity 160ms ease,visibility 0s}
+.search-disclosure-inner{min-height:0;overflow:hidden}
+.set-search{margin:2px 4px 8px;min-width:0}
+.set-search input{min-width:0;min-height:36px;padding:7px 10px;background:var(--bg);font-size:.85rem}
+.home-actions{display:flex;flex-direction:column;gap:0;margin:0 0 12px}
+.home-actions button{justify-content:flex-start;gap:10px;min-height:32px;padding:6px 10px;border:0;border-radius:6px;background:transparent;color:var(--text);font-size:.84rem;line-height:1.3;white-space:normal;text-align:left}
+.home-actions svg{width:17px;height:17px}
 .home-actions button:hover,.set-open:hover{background:var(--soft)}
-.set-search{margin:0 0 24px;min-width:0!important}
-.set-search input{min-width:0;background:var(--panel);font-size:.88rem}
-.sidebar-section{margin-bottom:18px}
-.sidebar-section>summary{cursor:pointer;font-size:.85rem;font-weight:650;color:var(--muted);padding:10px 8px;user-select:none}
-.sort-label{display:flex;align-items:center;gap:6px;margin:0 6px 8px;font-size:.72rem;color:var(--muted)}
-.sort-label select{width:100%;min-width:0;flex:1;padding:6px;font-size:.73rem;background:transparent;border-color:transparent}
-#sidebar .set-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:3px}
-#sidebar .set-open{display:block;min-height:0;padding:11px 12px;border:0;border-radius:9px;background:transparent;overflow-wrap:anywhere}
-#sidebar .set-open[aria-current="page"]{background:var(--soft);box-shadow:inset 3px 0 var(--accent)}
-#sidebar .set-open h3{font-size:.9rem;font-weight:500;line-height:1.5}
-#sidebar .set-open .tag{display:block;background:none;color:var(--muted);padding:0;font-size:.7rem;margin-top:3px}
+.sidebar-section{margin-bottom:10px}
+.sidebar-section>summary{cursor:pointer;font-size:.75rem;font-weight:600;color:var(--muted);padding:7px 8px;user-select:none}
+.sort-label{display:flex;align-items:center;gap:5px;margin:0 6px 3px;font-size:.67rem;color:var(--muted)}
+.sort-label select{width:100%;min-width:0;flex:1;padding:3px;font-size:.69rem;background:transparent;border-color:transparent}
+#sidebar .set-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:1px}
+#sidebar .set-open{display:flex;align-items:center;justify-content:space-between;gap:6px;min-height:32px;padding:6px 10px;border:0;border-radius:6px;background:transparent;overflow-wrap:anywhere}
+#sidebar .set-open[aria-current="page"]{background:var(--soft)}
+#sidebar .set-open h3{font-size:.83rem;font-weight:400;line-height:1.4;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#sidebar .set-open .tag{flex-shrink:0;background:none;color:var(--muted);padding:0;font-size:.62rem;white-space:nowrap}
 #sidebar .set-open p,#sidebar .set-open .open-tail{display:none}
-#sidebar .panel{padding:12px;font-size:.8rem}
-#sidebar #addSource{margin-bottom:12px;background:transparent;border-style:dashed;font-size:.8rem;min-height:37px}
-#sources{gap:8px;margin-top:5px}
-.source-group{border:0;border-left:1px solid var(--line);padding-left:6px;margin-left:7px;min-width:0}
-.source-group>summary{cursor:pointer;overflow-wrap:anywhere;font-size:.83rem;font-weight:600;padding:9px 5px}
-.source-meta{padding:5px 8px;color:var(--muted);overflow-wrap:anywhere;font-size:.7rem}
-.source-tools{display:flex;flex-wrap:wrap;gap:4px;padding:5px}
-.source-tools button{min-height:32px;padding:5px 7px;font-size:.72rem;background:transparent}
-.right-pane{display:flex;flex:1;flex-direction:column;min-width:0;min-height:0;background:var(--bg)}
-.workspace-header{display:flex;align-items:center;gap:12px;flex:0 0 60px;padding:8px 22px;border-bottom:1px solid var(--line)}
-.workspace-header .icon-btn{background:transparent;border:0}
-#workspaceTitle{font-size:.9rem;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-main.wrap,#workspace{width:100%;max-width:none;flex:1;min-height:0;margin:0;padding:24px clamp(18px,4vw,64px);overflow-y:auto}
+#sidebar .panel{padding:8px;border:0;background:transparent;font-size:.75rem}
+#sidebar #addSource{display:block;width:auto;margin:0 4px 5px;padding:5px 7px;background:transparent;border:0;font-size:.75rem;min-height:30px;color:var(--muted)}
+#sources{gap:5px;margin-top:2px}
+.source-group{border:0;border-left:1px solid var(--line);padding-left:4px;margin-left:7px;min-width:0}
+.source-group>summary{cursor:pointer;overflow-wrap:anywhere;font-size:.77rem;font-weight:500;padding:6px 5px}
+.source-meta{padding:3px 7px;color:var(--muted);overflow-wrap:anywhere;font-size:.65rem;margin:0}
+.source-tools{display:flex;flex-wrap:wrap;gap:2px;padding:3px}
+.source-tools button{min-height:28px;padding:4px 6px;font-size:.7rem;background:transparent}
+.right-pane{display:flex;flex-direction:column;min-width:0;min-height:0;background:var(--bg)}
+.workspace-header{display:flex;align-items:center;gap:10px;flex:0 0 50px;padding:8px 20px}
+#workspaceTitle{font-size:.82rem;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+main.wrap,#workspace{width:100%;max-width:none;flex:1;min-height:0;margin:0;padding:16px clamp(20px,4vw,60px) 24px;overflow-y:auto}
 #workspace:after{display:none}
-.welcome{height:100%;min-height:320px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:18px}
-.welcome h1{font-size:clamp(1.4rem,3vw,2rem);font-weight:600}.welcome p{line-height:1.9;margin:0}
+.welcome{height:100%;min-height:300px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:18px;padding-bottom:40px}
+.welcome>.tag{padding:0;background:none;color:var(--muted);font-size:.85rem}
+.welcome h1{font-size:clamp(1.4rem,3vw,2rem);font-weight:500;letter-spacing:-.03em}
+.welcome p{line-height:1.8;margin:0;font-size:.9rem}
+.welcome button{font-size:.85rem;padding:9px 16px;min-height:38px;border-radius:24px}
+.github-link{display:inline-flex;align-items:center;gap:6px;margin-top:14px;color:var(--muted);font-size:.78rem;text-decoration:none}
+.github-link:hover{color:var(--text);text-decoration:underline}
 #sets.active{height:100%}
-#list{max-width:1100px;margin:auto}
-#cards.active,#quiz.active{height:100%;min-height:0;display:grid;grid-template-rows:auto minmax(0,1fr);gap:8px}
-:is(#cards,#quiz)>.panel{width:100%;height:100%;padding:20px;border:0;background:transparent;grid-template-rows:auto auto auto minmax(0,1fr);gap:12px}
+#list{max-width:960px;margin:auto}
+.back-link{color:var(--muted);font-size:.8rem;min-height:30px}
+.set-info{padding:22px 0 12px;border:0;border-radius:0;background:transparent;margin-top:0}
+.set-info h2{font-size:clamp(1.5rem,3vw,2rem);font-weight:550;letter-spacing:-.025em;margin-bottom:8px}
+.set-info p{font-size:.9rem;color:var(--muted)}
+.study-actions{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 26px}
+.study-actions button{font-size:.85rem;font-weight:500;min-height:39px;padding:9px 16px;border-radius:24px}
+.list-heading{font-size:.9rem;font-weight:600}
+.detail-tools{gap:4px}.detail-tools button{border:0;background:transparent;min-height:32px;min-width:32px;padding:6px;color:var(--muted)}
+.stats{display:flex;gap:18px;margin:8px 0 20px}
+.stats>div{flex:0 0 auto;display:flex;align-items:baseline;gap:5px;padding:0;background:transparent;border:0;border-radius:0}
+.stats strong{font-size:.95rem;font-weight:550}.stats span{font-size:.77rem}
+.toolbar{gap:8px;margin:10px 0 16px}.entry-search input{min-height:38px;padding-top:8px;padding-bottom:8px;font-size:.85rem}
+.toolbar select,.toolbar>button{min-height:38px;padding:7px 10px;font-size:.82rem}
+#items{gap:0}.item{padding:18px 0;border:0;border-top:1px solid var(--line);border-radius:0;background:transparent;gap:8px}
+.item h3{font-size:1rem;font-weight:550}.item p,.item summary{font-size:.88rem}.item .tag{padding:0;background:none;color:var(--muted);font-size:.7rem}
+.item .actions{gap:6px}.item .actions button{flex:0 0 auto;border:0;background:transparent;padding:4px 8px;min-height:30px;color:var(--muted);font-size:.75rem}
+.item .actions .danger{color:#b44e58}.example{border-left:2px solid var(--line);color:var(--muted)}
+:is(#cards,#quiz).active{height:100%;min-height:0;display:grid;grid-template-rows:auto minmax(0,1fr);gap:6px}
+:is(#cards,#quiz)>.panel{width:100%;height:100%;padding:8px 0 0;border:0;border-radius:0;background:transparent;grid-template-rows:auto auto auto minmax(0,1fr);gap:12px}
 #cards>.panel{grid-template-rows:auto auto auto minmax(0,1fr) auto auto}
-:is(#cards,#quiz) .flash{padding:clamp(18px,4vw,48px);border-radius:20px}
-:is(#cards,#quiz) .flash strong{font-size:clamp(1.3rem,2.5vw,2.1rem)}
+:is(#cards,#quiz) .panel>.row{font-size:.9rem}
+:is(#cards,#quiz) .toolbar button,:is(#cards,#quiz) .toolbar select{font-size:.8rem;min-height:36px;padding:7px 11px}
+.bar{height:3px;background:var(--line)}
+:is(#cards,#quiz) .flash{padding:clamp(16px,3vw,36px);background:transparent;border:0;border-radius:0}
+:is(#cards,#quiz) .flash strong{font-size:clamp(1.25rem,2.5vw,2rem);font-weight:550;letter-spacing:-.02em}
+:is(#cards,#quiz) .actions button{min-height:42px;font-size:.85rem;border-radius:10px}
 #quizBody{grid-template-rows:minmax(0,1fr) auto;gap:16px}
-.quiz-choices{grid-template-columns:repeat(2,minmax(0,1fr));max-height:40dvh;gap:10px}
-.quiz-choices .choice{min-height:60px;padding:14px 18px}
-.sidebar-hidden #sidebar{display:none}
+.quiz-choices{grid-template-columns:repeat(2,minmax(0,1fr));max-height:40dvh;gap:8px}
+.quiz-choices .choice{min-height:54px;padding:13px 16px;font-size:.9rem;border-radius:10px}
+.quiz-choices .choice:hover{border-color:var(--muted)}
+dialog{border-radius:14px}.result{background:var(--soft)}
+.sidebar-hidden .app-shell{grid-template-columns:0 minmax(0,1fr)}
+.sidebar-hidden .sidebar-rail{visibility:hidden;transition:visibility 0s var(--motion)}
+.sidebar-hidden #sidebar{display:block;opacity:0;transform:translateX(-18px);pointer-events:none}
 .sidebar-backdrop{display:none}
 @media(max-width:760px){
- #sidebar{position:fixed;z-index:50;inset:0 auto 0 0;width:min(300px,85vw);padding-top:max(16px,env(safe-area-inset-top));padding-bottom:max(16px,env(safe-area-inset-bottom));box-shadow:12px 0 40px #0003}
- .sidebar-backdrop:not([hidden]){display:block;position:fixed;inset:0;z-index:40;background:#08121e66;border:0;border-radius:0;padding:0}
- .workspace-header{padding:8px 12px;flex-basis:54px}
- #workspace{padding:12px 12px max(12px,env(safe-area-inset-bottom))}
+ .app-shell,.sidebar-hidden .app-shell{grid-template-columns:minmax(0,1fr)}
+ .sidebar-rail{position:fixed;z-index:50;inset:0 auto 0 0;width:min(280px,85vw);box-shadow:12px 0 40px #0002;transform:translateX(0);transition:transform var(--motion) var(--ease),visibility 0s}
+ #sidebar{width:100%;padding-top:max(10px,env(safe-area-inset-top));padding-bottom:max(10px,env(safe-area-inset-bottom));opacity:1;transform:none}
+ .sidebar-hidden .sidebar-rail{transform:translateX(-100%);transition:transform var(--motion) var(--ease),visibility 0s var(--motion)}
+ .sidebar-hidden #sidebar{opacity:1;transform:none}
+ .sidebar-backdrop{display:block;position:fixed;inset:0;z-index:40;background:#0005;border:0;border-radius:0;padding:0;opacity:1;visibility:visible;transition:opacity var(--motion) ease,visibility 0s}
+ .sidebar-hidden .sidebar-backdrop{opacity:0;visibility:hidden;pointer-events:none;transition:opacity var(--motion) ease,visibility 0s var(--motion)}
+ .workspace-header{padding:8px 12px;flex-basis:48px}
+ #workspace{padding:10px 16px max(12px,env(safe-area-inset-bottom))}
  :is(#cards,#quiz)>.panel{padding:0;gap:8px}
- :is(#cards,#quiz) .flash{padding:16px}
+ :is(#cards,#quiz) .flash{padding:12px 4px}
  .quiz-choices{gap:6px}.quiz-choices .choice{min-height:48px;padding:10px}
- #quizBody{gap:8px}.welcome{min-height:240px}
+ #quizBody{gap:8px}.welcome{min-height:240px;padding-bottom:10px;gap:16px}
+ .set-info{padding-top:16px}.study-actions{margin-bottom:22px}
+ .toolbar .entry-search{min-width:0!important;flex-basis:100%}
 }
-@media(pointer:coarse){input,textarea,select,.set-search input,.sort-label select{font-size:16px}}
+@media(pointer:coarse){input,textarea,select,.set-search input,.sort-label select{font-size:16px}.home-actions button,#sidebar .set-open{min-height:38px}.sidebar-head .icon-btn{min-height:38px;min-width:38px}}
 @media(max-width:420px){.quiz-choices{grid-template-columns:minmax(0,1fr)}}
+@media(prefers-reduced-motion:reduce){.app-shell,#sidebar,.sidebar-rail,.sidebar-backdrop,.search-disclosure{transition:none!important}button{transition:none!important}}
 </style></head><body>
 <div class="app-shell">
-<aside id="sidebar" aria-label="学習セットのサイドバー">
-<div class="sidebar-head"><button type="button" class="home-link" id="homeLink" aria-label="Reviewer ホーム">Reviewer</button><button id="closeSidebar" class="icon-btn" aria-label="サイドバーを閉じる">✕</button></div>
+<div class="sidebar-rail"><aside id="sidebar" aria-label="学習セットのサイドバー">
+<div class="sidebar-head"><button type="button" class="home-link" id="homeLink" aria-label="Reviewer ホーム">Reviewer</button><div class="sidebar-head-tools"><button id="toggleSearch" class="icon-btn" aria-label="学習セットを検索" aria-controls="sidebarSearch" aria-expanded="false"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 4 4"/></svg></button><span id="sidebarToggleSlot"></span></div></div>
+<div id="sidebarSearch" class="search-disclosure" inert aria-hidden="true"><div class="search-disclosure-inner"><div class="set-search"><input id="setSearch" type="search" placeholder="学習セットを検索" aria-label="学習セットを検索"></div></div></div>
 <div class="home-actions">
 <button id="newSet" class="primary"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span>作成</span></button>
 <button id="showImport"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 17v4h16v-4"/></svg><span>インポート</span></button>
 <button id="showExport"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V4m-5 5 5-5 5 5M4 17v4h16v-4"/></svg><span>エクスポート</span></button>
 </div>
-
-<div class="set-search" style="flex:1;min-width:175px"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 3a8 8 0 1 0 0 16a8 8 0 0 0 0-16m6 14 4 4"/></svg><input id="setSearch" type="search" placeholder="学習セットを検索" aria-label="学習セットを検索"></div>
 
 <details id="localSection" class="sidebar-section" open><summary>ローカル</summary><label class="sort-label">並び順<select id="setSort" aria-label="ローカルの並び順"><option value="title:asc">名前 · 昇順</option><option value="title:desc">名前 · 降順</option><option value="createdAt:desc">作成日時 · 新しい順</option>
 <option value="createdAt:asc">作成日時 · 古い順</option>
@@ -198,12 +248,12 @@ main.wrap,#workspace{width:100%;max-width:none;flex:1;min-height:0;margin:0;padd
 <option value="updatedAt:desc">最終変更日時 · 新しい順</option>
 <option value="updatedAt:asc">最終変更日時 · 古い順</option>
 </select></label><button id="addSource" class="wide">＋ URLを登録</button><div id="sources" class="stack" aria-live="polite"></div></details>
-</aside>
-<button id="sidebarBackdrop" class="sidebar-backdrop" aria-label="サイドバーを閉じる" hidden></button>
+</aside></div>
+<button id="sidebarBackdrop" class="sidebar-backdrop" aria-label="サイドバーを閉じる" tabindex="-1" aria-hidden="true"></button>
 <div class="right-pane">
-<header class="workspace-header"><button id="toggleSidebar" class="icon-btn" aria-label="サイドバーを切り替え" aria-controls="sidebar" aria-expanded="true"><svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M9 4v16"/></svg></button><span id="workspaceTitle">Reviewer</span></header>
+<header class="workspace-header"><span id="workspaceToggleSlot"><button id="toggleSidebar" class="icon-btn" aria-label="サイドバーを切り替え" aria-controls="sidebar" aria-expanded="true"><svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M9 4v16"/></svg></button></span><span id="workspaceTitle">Reviewer</span></header>
 <main class="wrap" id="workspace">
-<section id="sets" class="screen active"><div class="welcome"><span class="tag">Reviewer</span><h1>今日は何を復習しますか？</h1><p class="muted">サイドバーから学習セットを選んで、<br>単語カードやクイズを始めましょう。</p><button id="browseSets">学習セットを選ぶ</button></div></section>
+<section id="sets" class="screen active"><div class="welcome"><span class="tag">Reviewer</span><h1>今日は何を復習しますか？</h1><p class="muted">サイドバーから学習セットを選んで、<br>単語カードやクイズを始めましょう。</p><button id="browseSets">学習セットを選ぶ</button><a class="github-link" href="https://github.com/kntt32/reviewer" target="_blank" rel="noopener noreferrer">github.com/kntt32/reviewer <span aria-hidden="true">↗</span></a></div></section>
 <section id="list" class="screen">
 <button class="back-link" id="back"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg> 学習セット</button>
 <div class="set-info"><h2 id="setTitle"></h2><p id="setDesc" class="muted"></p></div>
@@ -534,17 +584,29 @@ function savePreferences(){try{localStorage.setItem(UI_KEY,JSON.stringify(prefer
 const mobileSidebar=matchMedia('(max-width:760px)');
 function setSidebar(visible,persist=true){
  document.body.classList.toggle('sidebar-hidden',!visible);
- $("sidebar").hidden=!visible;
+ $("sidebar").inert=!visible;
+ $("sidebar").setAttribute('aria-hidden',String(!visible));
+ $(visible?"sidebarToggleSlot":"workspaceToggleSlot").append($("toggleSidebar"));
  document.querySelector(".right-pane").inert=visible&&mobileSidebar.matches;
  $("toggleSidebar").setAttribute('aria-expanded',String(visible));
- $("sidebarBackdrop").hidden=!visible||!mobileSidebar.matches;
+ $("sidebarBackdrop").inert=!visible||!mobileSidebar.matches;
  if(persist&&!mobileSidebar.matches){preferences.hidden=!visible;savePreferences()}
 }
-$("toggleSidebar").onclick=()=>{setSidebar($("sidebar").hidden);if(mobileSidebar.matches&&!$("sidebar").hidden)$("closeSidebar").focus()};
-$("closeSidebar").onclick=()=>{setSidebar(false);$("toggleSidebar").focus()};
+$("toggleSidebar").onclick=()=>{setSidebar(document.body.classList.contains('sidebar-hidden'));$("toggleSidebar").focus()};
 $("sidebarBackdrop").onclick=()=>{setSidebar(false);$("toggleSidebar").focus()};
-$("browseSets").onclick=()=>{setSidebar(true);$("setSearch").focus()};
-document.addEventListener('keydown',e=>{if(e.key==='Escape'&&mobileSidebar.matches&&!document.querySelector('dialog[open]')){setSidebar(false);$("toggleSidebar").focus()}});
+function setSearchOpen(open){
+ $("sidebarSearch").classList.toggle('open',open);
+ $("sidebarSearch").inert=!open;$("sidebarSearch").setAttribute('aria-hidden',String(!open));
+ $("toggleSearch").setAttribute('aria-expanded',String(open));
+ if(open)$("setSearch").focus();else{$("setSearch").value='';renderSets();$("toggleSearch").focus()}
+}
+$("toggleSearch").onclick=()=>setSearchOpen(!$("sidebarSearch").classList.contains('open'));
+$("browseSets").onclick=()=>{setSidebar(true);$("toggleSearch").focus()};
+document.addEventListener('keydown',e=>{
+ if(e.key!=='Escape'||document.querySelector('dialog[open]'))return;
+ if($("sidebarSearch").classList.contains('open')){setSearchOpen(false);return}
+ if(mobileSidebar.matches){setSidebar(false);$("toggleSidebar").focus()}
+});
 mobileSidebar.addEventListener('change',()=>setSidebar(!mobileSidebar.matches&&!preferences.hidden,false));
 setSidebar(!mobileSidebar.matches&&!preferences.hidden,false);
 for(const id of ['localSection','webSection']){
@@ -553,12 +615,11 @@ for(const id of ['localSection','webSection']){
 }
 $("webSort").value=preferences.webSort||'createdAt:desc';
 $("webSort").onchange=()=>{preferences.webSort=$("webSort").value;savePreferences();renderSources()};
-$("sources").addEventListener('toggle',e=>{
- const id=e.target.dataset.sourceSection;if(!id||!e.target.isConnected)return;
+function rememberSourceSection(section){
  const folded=new Set(preferences.folded||[]);
- if(e.target.open)folded.delete(id);else folded.add(id);
+ if(section.open)folded.delete(section.dataset.sourceSection);else folded.add(section.dataset.sourceSection);
  preferences.folded=[...folded];savePreferences();
-},true);
+}
 const syncing=new Set();
 function sortSets(sets,value){
  const [field,order]=value.split(':');
@@ -642,6 +703,8 @@ $("sourceForm").onsubmit=async e=>{
  }catch(e){$("sourceMessage").textContent=e.message}
 };
 $("sources").onclick=e=>{
+ const summary=e.target.closest('[data-source-section] > summary');
+ if(summary){e.preventDefault();const section=summary.parentElement;section.open=!section.open;rememberSourceSection(section);return}
  const b=e.target.closest('button');if(!b)return;
  if(b.dataset.open){open(b.dataset.open);return}
  const id=b.dataset.sync||b.dataset.unsubscribe||b.dataset.copy,source=state.sources.find(s=>s.id===id);if(!source)return;
