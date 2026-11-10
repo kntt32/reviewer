@@ -143,7 +143,7 @@ body:has(#cards.active,#quiz.active)>main.wrap{
 <section id="cards" class="screen">
 <button class="back-link" data-detail-back><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg> セットに戻る</button>
 <div class="panel stack"><div class="row"><strong id="cardTitle"></strong><span id="cardCount" class="muted"></span></div>
-<div class="toolbar"><select id="cardScope"><option value="all">すべて</option><option value="weak">苦手</option></select><button id="shuffle">シャッフル</button></div>
+<div class="toolbar"><select id="cardScope"><option value="all">すべて</option><option value="weak">苦手</option></select><button id="shuffle">シャッフル</button><button id="restartCards">最初から</button></div>
 <div class="bar"><div id="cardBar"></div></div><div class="flash" id="flash"></div>
 <div class="actions"><button id="prev">前へ</button><button id="flip" class="primary">答えを見る</button><button id="next">次へ</button></div>
 <div class="actions" id="grades" hidden><button data-grade="wrong">覚えていない</button><button data-grade="hard">難しかった</button><button data-grade="good" class="primary">覚えた</button></div></div>
@@ -186,6 +186,7 @@ body:has(#cards.active,#quiz.active)>main.wrap{
 "use strict";
 const $=id=>document.getElementById(id),KEY="kntt.reviewer.v2",OLD="kntt.english-review.v1",SORT_KEY="kntt.reviewer.set-sort",DAY=86400000;
 const esc=x=>String(x??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+let quizCurrent=null,quizOrder=[],quizAnswered=null;
 let state={sets:[],progress:{}},active="",editingSet="",editingItem="",deck=[],pos=0,reveal=false,queue=[],firstSeen=new Set(),wrongOnce=new Set(),firstRight=0,quizTotal=0;
 const idOK=x=>typeof x==="string"&&/^[A-Za-z0-9._-]{1,100}$/.test(x);
 function item(x){if(!x||!idOK(x.id)||!String(x.term||"").trim()||!String(x.meaning||"").trim())throw Error("カードのid/term/meaningが不正です");if(!Array.isArray(x.options)||x.options.length!==4||!x.options.every(a=>typeof a==="string"&&a.trim()))throw Error("optionsは4つの文字列です");if(!Number.isInteger(+x.answer)||+x.answer<0||+x.answer>3)throw Error("answerは0〜3です");return{id:x.id,type:x.type==="grammar"?"grammar":"word",term:String(x.term),meaning:String(x.meaning),explanation:String(x.explanation||""),example:String(x.example||""),translation:String(x.translation||""),question:String(x.question||x.term+"について正しい説明は？"),options:x.options.map(a=>a.trim()),answer:+x.answer}}
@@ -221,7 +222,7 @@ function load(){
 try{
  const d=JSON.parse(localStorage.getItem(KEY)||"null");
  if(d&&Array.isArray(d.sets)){
-  state={sets:d.sets.map(x=>({...set(x),...(x.sourceId?{sourceId:x.sourceId,remoteKey:x.remoteKey}: {})})),progress:d.progress||{},sources:Array.isArray(d.sources)?d.sources:[]};
+  state={sets:d.sets.map(x=>({...set(x),...(x.sourceId?{sourceId:x.sourceId,remoteKey:x.remoteKey}: {})})),progress:d.progress||{},sessions:d.sessions||{},view:d.view||null,sources:Array.isArray(d.sources)?d.sources:[]};
   for(const s of state.sets)restoreStudyDate(s,state.progress);
   // The first release silently installed this exact seed. Undo it only when untouched.
   const seedIds=["so-that-result","depend-on","relative-which-object","could-hardly-have","not-until-inversion","misleading-v-mistaken","apparently","how-adj-s-v","though-participial","physician","intended-to","provided-that","take-seriously","how-arrived","what-believed","however-adj","by-comparison","themselves-emphasis","no-longer","whose-relative","otherwise","borne-by","very-emphasis","in-some-measure","had-past-perfect-inversion","would-have-provided","far-from-ing","would-have-found","few-visible-traces","questions-which","particular","only-in-part"];
@@ -254,7 +255,8 @@ function tab(name){
   if(name==="sets")renderSets();
   if(name==="list")renderList();
   if(name==="cards")buildCards();
-  if(name==="quiz"){$("quizTitle").textContent=selected().title;resetQuizView();}
+  if(name==="quiz"){$("quizTitle").textContent=selected().title;restoreQuiz();}
+  state.view={setId:active,screen:name};save();
   window.scrollTo(0,0);
  };
  if(document.startViewTransition&&!window.matchMedia("(prefers-reduced-motion: reduce)").matches){
@@ -304,13 +306,38 @@ $("setGrid").onclick=e=>{let b=e.target.closest("[data-open]");if(b)open(b.datas
 
 function renderList(){let s=selected();if(!s)return;const remote=!!s.sourceId;for(const id of ["editSet","deleteSet","newItem"])$(id).hidden=remote;$("setTitle").textContent=s.title;$("setDesc").textContent=s.description;let vals=[["カード",s.items.length],["苦手",s.items.filter(x=>weak(progress(s.id,x.id))).length]];$("stats").innerHTML=vals.map(a=>'<div><strong>'+a[1]+'</strong><span>'+a[0]+'</span></div>').join("");const q=$("search").value.trim().toLowerCase();const a=filter($("filter").value).filter(x=>[x.term,x.meaning,x.explanation].some(t=>t.toLowerCase().includes(q)));$("items").innerHTML=a.length?a.map(x=>'<article class="item"><div class="row"><span class="tag">'+(x.type==="grammar"?"構文・概念":"単語・用語")+'</span>'+(weak(progress(s.id,x.id))?'<span class="small muted">苦手</span>':'')+'</div><h3>'+esc(x.term)+'</h3><p>'+esc(x.meaning)+'</p><details><summary>解説・例</summary><p class="detail">'+esc(x.explanation)+'</p><p class="example">'+esc(x.example)+'\n'+esc(x.translation)+'</p></details><div class="actions" '+(s.sourceId?'hidden':'')+'><button data-edit="'+esc(x.id)+'">編集</button><button class="danger" data-remove="'+esc(x.id)+'">削除</button></div></article>').join(""):'<div class="panel muted">該当するカードはありません。</div>'}
 $("search").oninput=renderList;$("filter").onchange=renderList;
-function buildCards(){if(!selected())return;$("cardTitle").textContent=selected().title;deck=[...filter($("cardScope").value)];pos=0;reveal=false;renderCard()}
-function renderCard(){let x=deck[pos];$("cardCount").textContent=x?(pos+1)+" / "+deck.length:"0 / 0";$("cardBar").style.width=x?(100*(pos+1)/deck.length)+"%":"0%";$("grades").hidden=!x||!reveal;$("prev").disabled=pos===0;$("next").disabled=!x||pos>=deck.length-1;$("flip").disabled=!x;$("flip").textContent=reveal?"答えを隠す":"答えを見る";$("flash").scrollTop=0;$("flash").innerHTML=x?'<strong>'+esc(x.term)+'</strong>'+(reveal?'<div><b>'+esc(x.meaning)+'</b><p class="detail">'+esc(x.explanation)+'</p><p class="example">'+esc(x.example)+'\n'+esc(x.translation)+'</p></div>':'<p class="muted">答えを思い出してから表示</p>'):'<p class="muted">対象カードがありません。</p>'}
-$("cardScope").onchange=buildCards;$("flip").onclick=()=>{reveal=!reveal;renderCard()};$("prev").onclick=()=>{if(pos>0){pos--;reveal=false;renderCard()}};$("next").onclick=()=>{if(pos<deck.length-1){pos++;reveal=false;renderCard()}};$("shuffle").onclick=()=>{deck.sort(()=>Math.random()-.5);pos=0;reveal=false;renderCard()};document.querySelectorAll("[data-grade]").forEach(b=>b.onclick=()=>{if(!deck[pos])return;grade(deck[pos].id,b.dataset.grade);deck.splice(pos,1);pos=Math.min(pos,Math.max(deck.length-1,0));reveal=false;renderCard()});
+function session(){return (state.sessions||={})[active]||((state.sessions)[active]={})}
+function buildCards(reset=false){
+ if(!selected())return;
+ $("cardTitle").textContent=selected().title;
+ const saved=!reset&&session().cards;
+ if(saved){
+ $("cardScope").value=saved.scope;
+ deck=saved.ids.map(id=>selected().items.find(x=>x.id===id)).filter(Boolean);
+ pos=Math.min(saved.pos,Math.max(0,deck.length-1));reveal=!!saved.reveal;
+ }else{deck=[...filter($("cardScope").value)];pos=0;reveal=false}
+ renderCard();
+}
+function renderCard(){session().cards={ids:deck.map(x=>x.id),pos,reveal,scope:$("cardScope").value};save();let x=deck[pos];$("cardCount").textContent=x?(pos+1)+" / "+deck.length:"0 / 0";$("cardBar").style.width=x?(100*(pos+1)/deck.length)+"%":"0%";$("grades").hidden=!x||!reveal;$("prev").disabled=pos===0;$("next").disabled=!x||pos>=deck.length-1;$("flip").disabled=!x;$("flip").textContent=reveal?"答えを隠す":"答えを見る";$("flash").scrollTop=0;$("flash").innerHTML=x?'<strong>'+esc(x.term)+'</strong>'+(reveal?'<div><b>'+esc(x.meaning)+'</b><p class="detail">'+esc(x.explanation)+'</p><p class="example">'+esc(x.example)+'\n'+esc(x.translation)+'</p></div>':'<p class="muted">答えを思い出してから表示</p>'):'<p class="muted">対象カードがありません。</p>'}
+$("restartCards").onclick=()=>buildCards(true);$("cardScope").onchange=()=>buildCards(true);$("flip").onclick=()=>{reveal=!reveal;renderCard()};$("prev").onclick=()=>{if(pos>0){pos--;reveal=false;renderCard()}};$("next").onclick=()=>{if(pos<deck.length-1){pos++;reveal=false;renderCard()}};$("shuffle").onclick=()=>{deck.sort(()=>Math.random()-.5);pos=0;reveal=false;renderCard()};document.querySelectorAll("[data-grade]").forEach(b=>b.onclick=()=>{if(!deck[pos])return;grade(deck[pos].id,b.dataset.grade);deck.splice(pos,1);pos=Math.min(pos,Math.max(deck.length-1,0));reveal=false;renderCard()});
 function resetQuizView(){
  $("quizCount").textContent="";
  $("quizBar").style.width="0%";
  $("quizBody").innerHTML='<div class="flash muted">範囲を選んで「クイズ開始」を押してください。</div>';
+}
+function saveQuiz(){
+ session().quiz={queue,current:quizCurrent,order:quizOrder,answered:quizAnswered,total:quizTotal,seen:[...firstSeen],wrong:[...wrongOnce],right:firstRight,scope:$("quizScope").value};save();
+}
+function restoreQuiz(){
+ const saved=session().quiz;
+ if(!saved){resetQuizView();return}
+ const ids=new Set(selected().items.map(x=>x.id));
+ queue=saved.queue.filter(id=>ids.has(id));quizCurrent=saved.current;
+ quizOrder=saved.order;quizAnswered=saved.answered;quizTotal=saved.total;
+ firstSeen=new Set(saved.seen);wrongOnce=new Set(saved.wrong);firstRight=saved.right;
+ $("quizScope").value=saved.scope;
+ if(quizCurrent&&!ids.has(quizCurrent)){nextQuiz();return}
+ renderQuiz();
 }
 function startQuiz(){
  queue=filter($("quizScope").value).map(x=>x.id).sort(()=>Math.random()-.5);
@@ -321,8 +348,13 @@ function startQuiz(){
  nextQuiz();
 }
 function nextQuiz(){
- const id=queue.shift(),x=selected()?.items.find(a=>a.id===id);
- const position=quizTotal-queue.length;
+ quizCurrent=queue.shift()||null;quizOrder=[0,1,2,3].sort(()=>Math.random()-.5);quizAnswered=null;
+ if(quizCurrent)firstSeen.add(quizCurrent);
+ saveQuiz();renderQuiz();
+}
+function renderQuiz(){
+ const id=quizCurrent,x=selected()?.items.find(a=>a.id===id);
+ const position=Math.min(quizTotal,firstSeen.size);
  $("quizCount").textContent=position+" / "+quizTotal;
  $("quizBar").style.width=(quizTotal?100*position/quizTotal:0)+"%";
  if(!x){
@@ -335,7 +367,7 @@ function nextQuiz(){
   return;
  }
  firstSeen.add(id);
- const order=[0,1,2,3].sort(()=>Math.random()-.5);
+ const order=quizOrder;
  $("quizBody").innerHTML='<div class="flash" id="feedback" aria-live="polite"><strong>'+esc(x.question)+'</strong></div><div class="quiz-choices" id="quizAnswers">'+order.map(i=>'<button class="choice" data-answer="'+i+'">'+esc(x.options[i])+'</button>').join("")+'</div>';
  const choices=$("quizBody").querySelectorAll("[data-answer]");
  choices.forEach(b=>b.onclick=()=>{
@@ -344,6 +376,11 @@ function nextQuiz(){
   if(ok&&!wrongOnce.has(x.id))firstRight++;
   if(!ok){wrongOnce.add(x.id);queue.push(x.id)}
   grade(x.id,ok?"good":"wrong");
+  quizAnswered=ok;saveQuiz();renderQuizFeedback(x,ok);
+ });
+ if(quizAnswered!==null)renderQuizFeedback(x,quizAnswered);
+}
+function renderQuizFeedback(x,ok){
   $("feedback").innerHTML='<strong>'+(ok?"正解":"不正解 — 後で再出題")+'</strong><div><p>正解：'+esc(x.options[x.answer])+'</p><p class="detail">'+esc(x.explanation)+'</p></div>';
   $("feedback").scrollTop=0;
   const answers=$("quizAnswers");
@@ -353,11 +390,9 @@ function nextQuiz(){
    nextQuiz();
    $("quizBody").querySelector("button")?.focus({preventScroll:true});
   };
-  $("continue").focus({preventScroll:true});
- });
-}
+ }
 $("startQuiz").onclick=startQuiz;
-$("quizScope").onchange=resetQuizView;
+$("quizScope").onchange=()=>{delete session().quiz;save();resetQuizView()};
 function showSet(id){editingSet=id||"";let s=state.sets.find(x=>x.id===id);$("sTitle").value=s?.title||"";$("sDesc").value=s?.description||"";$("setDialog").showModal()}
 $("deleteSet").onclick=()=>{const s=selected();if(!s||!confirm("学習セット「"+s.title+"」とその学習履歴を削除しますか？"))return;state.sets=state.sets.filter(v=>v.id!==s.id);for(const k of Object.keys(state.progress))if(k.startsWith(s.id+"/"))delete state.progress[k];active="";save();tab("sets")};$("newSet").onclick=()=>{$("createDialog").showModal();$("createTitle").focus()};
 $("cancelCreate").onclick=()=>{$("createDialog").close()};
@@ -409,7 +444,7 @@ function doImport(t){try{$("message").textContent=importData(JSON.parse(t))+"セ
 $("importJson").onclick=()=>doImport($("jsonInput").value);$("file").onchange=async e=>{if(e.target.files[0])doImport(await e.target.files[0].text());e.target.value=""};
 function download(name,data){let url=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:"application/json"})),a=document.createElement("a");a.href=url;a.download=name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000)}
 $("export").onclick=()=>download("reviewer-sets.json",{sets:state.sets.map(s=>({title:s.title,description:s.description,items:s.items.map(({id,...fields})=>fields)}))});$("backup").onclick=()=>download("reviewer-backup.json",state);
-$("reset").onclick=()=>{if(confirm("学習履歴を初期化しますか？")){state.progress={};for(const s of state.sets)s.lastStudiedAt=null;save();renderSets();if(selected())renderList()}};
+$("reset").onclick=()=>{if(confirm("学習履歴を初期化しますか？")){state.progress={};state.sessions={};state.view=null;for(const s of state.sets)s.lastStudiedAt=null;save();renderSets();if(selected())renderList()}};
 $("clear").onclick=()=>{if(confirm("すべてのセットと履歴を削除しますか？")){state={sets:[],progress:{}};active="";save();tab("sets")}};
 const promptFormat=[
 "以下の要望に沿ってReviewerアプリに取り込める学習セットのJSONを作成してください。",
@@ -497,6 +532,9 @@ $("sources").onclick=e=>{
  }
 };
 load();renderSets();
+if(state.view&&state.sets.some(s=>s.id===state.view.setId)&&['list','cards','quiz'].includes(state.view.screen)){
+ active=state.view.setId;tab(state.view.screen);
+}
 for(const source of state.sources||[])syncSource(source);
 
 })();</script></body></html>
