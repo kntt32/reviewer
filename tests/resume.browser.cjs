@@ -10,7 +10,7 @@ const assert=require('node:assert/strict');
  await page.route('https://reviewer.test/**',r=>r.fulfill({contentType:'text/html',body:fs.readFileSync(new URL('../dist/reviewer.html',`file://${__filename}`),'utf8')}));
  await page.goto('https://reviewer.test/reviewer.html');
  await page.evaluate(()=>localStorage.setItem('kntt.reviewer.v2',JSON.stringify({sets:[{id:'s',title:'Resume',items:[0,1,2].map(i=>({id:'c'+i,term:'term'+i,meaning:'meaning'+i,options:['a','b','c','d'],answer:0}))}],progress:{}})));
- await page.reload();await page.locator('[data-open="s"]').click();await page.locator('#openCards').click();
+ await page.reload();await page.locator('#toggleSidebar').click();await page.locator('[data-open="s"]').click();await page.locator('#openCards').click();
  await page.locator('#shuffle').click();await page.locator('#next').click();await page.locator('#flip').click();
  const text=await page.locator('#flash').innerText();await page.reload();
  assert.equal(await page.locator('#flash').innerText(),text);assert.equal(await page.locator('#cardCount').innerText(),'2 / 3');

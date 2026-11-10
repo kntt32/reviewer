@@ -106,28 +106,104 @@ body:has(#cards.active,#quiz.active)>main.wrap{
 @media(min-width:480px),(max-height:520px){
  .quiz-choices{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
+
+/* Two-pane workspace. The sidebar owns navigation; study fills the right pane. */
+:root{--sidebar-bg:#eef0f4}
+@media(prefers-color-scheme:dark){:root{--sidebar-bg:#171f2a}}
+button,a,input,select,textarea,summary,label,.flash,.quiz-choices{touch-action:manipulation}
+body,body:has(#cards.active,#quiz.active){height:100dvh;min-height:0;display:block;overflow:hidden}
+.app-shell{height:100%;display:flex;overflow:hidden}
+#sidebar{width:280px;flex:0 0 280px;background:var(--sidebar-bg);border-right:1px solid var(--line);padding:16px 12px;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin}
+.sidebar-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:20px;padding-left:10px}
+.sidebar-head .home-link{font-size:1.18rem;font-weight:700}
+.sidebar-head .icon-btn{background:transparent;border:0;color:var(--muted)}
+.home-actions{display:flex;flex-direction:column;gap:5px;margin:0 0 18px}
+.home-actions button{justify-content:flex-start;gap:12px;border:0;border-radius:9px;background:transparent;color:var(--text);padding:11px 12px;font-size:.94rem;white-space:normal;text-align:left}
+.home-actions button:hover,.set-open:hover{background:var(--soft)}
+.set-search{margin:0 0 24px;min-width:0!important}
+.set-search input{min-width:0;background:var(--panel);font-size:.88rem}
+.sidebar-section{margin-bottom:18px}
+.sidebar-section>summary{cursor:pointer;font-size:.85rem;font-weight:650;color:var(--muted);padding:10px 8px;user-select:none}
+.sort-label{display:flex;align-items:center;gap:6px;margin:0 6px 8px;font-size:.72rem;color:var(--muted)}
+.sort-label select{width:100%;min-width:0;flex:1;padding:6px;font-size:.73rem;background:transparent;border-color:transparent}
+#sidebar .set-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:3px}
+#sidebar .set-open{display:block;min-height:0;padding:11px 12px;border:0;border-radius:9px;background:transparent;overflow-wrap:anywhere}
+#sidebar .set-open[aria-current="page"]{background:var(--soft);box-shadow:inset 3px 0 var(--accent)}
+#sidebar .set-open h3{font-size:.9rem;font-weight:500;line-height:1.5}
+#sidebar .set-open .tag{display:block;background:none;color:var(--muted);padding:0;font-size:.7rem;margin-top:3px}
+#sidebar .set-open p,#sidebar .set-open .open-tail{display:none}
+#sidebar .panel{padding:12px;font-size:.8rem}
+#sidebar #addSource{margin-bottom:12px;background:transparent;border-style:dashed;font-size:.8rem;min-height:37px}
+#sources{gap:8px;margin-top:5px}
+.source-group{border:0;border-left:1px solid var(--line);padding-left:6px;margin-left:7px;min-width:0}
+.source-group>summary{cursor:pointer;overflow-wrap:anywhere;font-size:.83rem;font-weight:600;padding:9px 5px}
+.source-meta{padding:5px 8px;color:var(--muted);overflow-wrap:anywhere;font-size:.7rem}
+.source-tools{display:flex;flex-wrap:wrap;gap:4px;padding:5px}
+.source-tools button{min-height:32px;padding:5px 7px;font-size:.72rem;background:transparent}
+.right-pane{display:flex;flex:1;flex-direction:column;min-width:0;min-height:0;background:var(--bg)}
+.workspace-header{display:flex;align-items:center;gap:12px;flex:0 0 60px;padding:8px 22px;border-bottom:1px solid var(--line)}
+.workspace-header .icon-btn{background:transparent;border:0}
+#workspaceTitle{font-size:.9rem;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+main.wrap,#workspace{width:100%;max-width:none;flex:1;min-height:0;margin:0;padding:24px clamp(18px,4vw,64px);overflow-y:auto}
+#workspace:after{display:none}
+.welcome{height:100%;min-height:320px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:18px}
+.welcome h1{font-size:clamp(1.4rem,3vw,2rem);font-weight:600}.welcome p{line-height:1.9;margin:0}
+#sets.active{height:100%}
+#list{max-width:1100px;margin:auto}
+#cards.active,#quiz.active{height:100%;min-height:0;display:grid;grid-template-rows:auto minmax(0,1fr);gap:8px}
+:is(#cards,#quiz)>.panel{width:100%;height:100%;padding:20px;border:0;background:transparent;grid-template-rows:auto auto auto minmax(0,1fr);gap:12px}
+#cards>.panel{grid-template-rows:auto auto auto minmax(0,1fr) auto auto}
+:is(#cards,#quiz) .flash{padding:clamp(18px,4vw,48px);border-radius:20px}
+:is(#cards,#quiz) .flash strong{font-size:clamp(1.3rem,2.5vw,2.1rem)}
+#quizBody{grid-template-rows:minmax(0,1fr) auto;gap:16px}
+.quiz-choices{grid-template-columns:repeat(2,minmax(0,1fr));max-height:40dvh;gap:10px}
+.quiz-choices .choice{min-height:60px;padding:14px 18px}
+.sidebar-hidden #sidebar{display:none}
+.sidebar-backdrop{display:none}
+@media(max-width:760px){
+ #sidebar{position:fixed;z-index:50;inset:0 auto 0 0;width:min(300px,85vw);padding-top:max(16px,env(safe-area-inset-top));padding-bottom:max(16px,env(safe-area-inset-bottom));box-shadow:12px 0 40px #0003}
+ .sidebar-backdrop:not([hidden]){display:block;position:fixed;inset:0;z-index:40;background:#08121e66;border:0;border-radius:0;padding:0}
+ .workspace-header{padding:8px 12px;flex-basis:54px}
+ #workspace{padding:12px 12px max(12px,env(safe-area-inset-bottom))}
+ :is(#cards,#quiz)>.panel{padding:0;gap:8px}
+ :is(#cards,#quiz) .flash{padding:16px}
+ .quiz-choices{gap:6px}.quiz-choices .choice{min-height:48px;padding:10px}
+ #quizBody{gap:8px}.welcome{min-height:240px}
+}
+@media(pointer:coarse){input,textarea,select,.set-search input,.sort-label select{font-size:16px}}
+@media(max-width:420px){.quiz-choices{grid-template-columns:minmax(0,1fr)}}
 </style></head><body>
-<header class="wrap app-header"><h1><button type="button" class="home-link" id="homeLink" aria-label="Reviewer ホーム">Reviewer</button></h1></header>
-<main class="wrap">
-<section id="sets" class="screen active">
+<div class="app-shell">
+<aside id="sidebar" aria-label="学習セットのサイドバー">
+<div class="sidebar-head"><button type="button" class="home-link" id="homeLink" aria-label="Reviewer ホーム">Reviewer</button><button id="closeSidebar" class="icon-btn" aria-label="サイドバーを閉じる">✕</button></div>
 <div class="home-actions">
 <button id="newSet" class="primary"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span>作成</span></button>
 <button id="showImport"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 17v4h16v-4"/></svg><span>インポート</span></button>
 <button id="showExport"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V4m-5 5 5-5 5 5M4 17v4h16v-4"/></svg><span>エクスポート</span></button>
 </div>
 
-<div class="toolbar" style="margin-bottom:16px"><div class="set-search" style="flex:1;min-width:175px"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 3a8 8 0 1 0 0 16a8 8 0 0 0 0-16m6 14 4 4"/></svg><input id="setSearch" type="search" placeholder="学習セットを検索" aria-label="学習セットを検索"></div>
-<select id="setSort" aria-label="学習セットの並び順">
-<option value="createdAt:desc">作成日時 · 新しい順</option>
+<div class="set-search" style="flex:1;min-width:175px"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 3a8 8 0 1 0 0 16a8 8 0 0 0 0-16m6 14 4 4"/></svg><input id="setSearch" type="search" placeholder="学習セットを検索" aria-label="学習セットを検索"></div>
+
+<details id="localSection" class="sidebar-section" open><summary>ローカル</summary><label class="sort-label">並び順<select id="setSort" aria-label="ローカルの並び順"><option value="title:asc">名前 · 昇順</option><option value="title:desc">名前 · 降順</option><option value="createdAt:desc">作成日時 · 新しい順</option>
 <option value="createdAt:asc">作成日時 · 古い順</option>
 <option value="lastStudiedAt:desc">最終学習日時 · 新しい順</option>
 <option value="lastStudiedAt:asc">最終学習日時 · 古い順</option>
 <option value="updatedAt:desc">最終変更日時 · 新しい順</option>
 <option value="updatedAt:asc">最終変更日時 · 古い順</option>
-</select></div>
-<section><h2>ローカル</h2><div id="setGrid" class="set-grid"></div></section>
-<section style="margin-top:28px"><div class="row"><h2>ネット</h2><button id="addSource">URLを登録</button></div><p class="muted small">配信元ごとに分類。起動時と「同期」で更新します。編集する場合はローカルへコピーしてください。</p><div id="sources" class="stack" aria-live="polite"></div></section>
-</section>
+</select></label><div id="setGrid" class="set-grid"></div></details>
+<details id="webSection" class="sidebar-section" open><summary>ウェブ</summary><label class="sort-label">並び順<select id="webSort" aria-label="ウェブの並び順"><option value="title:asc">名前 · 昇順</option><option value="title:desc">名前 · 降順</option><option value="createdAt:desc">作成日時 · 新しい順</option>
+<option value="createdAt:asc">作成日時 · 古い順</option>
+<option value="lastStudiedAt:desc">最終学習日時 · 新しい順</option>
+<option value="lastStudiedAt:asc">最終学習日時 · 古い順</option>
+<option value="updatedAt:desc">最終変更日時 · 新しい順</option>
+<option value="updatedAt:asc">最終変更日時 · 古い順</option>
+</select></label><button id="addSource" class="wide">＋ URLを登録</button><div id="sources" class="stack" aria-live="polite"></div></details>
+</aside>
+<button id="sidebarBackdrop" class="sidebar-backdrop" aria-label="サイドバーを閉じる" hidden></button>
+<div class="right-pane">
+<header class="workspace-header"><button id="toggleSidebar" class="icon-btn" aria-label="サイドバーを切り替え" aria-controls="sidebar" aria-expanded="true"><svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M9 4v16"/></svg></button><span id="workspaceTitle">Reviewer</span></header>
+<main class="wrap" id="workspace">
+<section id="sets" class="screen active"><div class="welcome"><span class="tag">Reviewer</span><h1>今日は何を復習しますか？</h1><p class="muted">サイドバーから学習セットを選んで、<br>単語カードやクイズを始めましょう。</p><button id="browseSets">学習セットを選ぶ</button></div></section>
 <section id="list" class="screen">
 <button class="back-link" id="back"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg> 学習セット</button>
 <div class="set-info"><h2 id="setTitle"></h2><p id="setDesc" class="muted"></p></div>
@@ -155,7 +231,7 @@ body:has(#cards.active,#quiz.active)>main.wrap{
 <div class="bar" aria-hidden="true"><div id="quizBar" style="width:0"></div></div>
 <div id="quizBody" class="stack"></div></div>
 </section>
-</main>
+</main></div></div>
 <dialog id="createDialog"><form id="createForm" class="modal-pane">
 <div class="modal-head"><h2>新しい学習セット</h2><button type="button" class="icon-btn" data-close-dialog="createDialog" aria-label="閉じる"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button></div>
 
@@ -247,9 +323,8 @@ function grade(id,result){let p={...progress(active,id)};p.attempts++;if(result=
 
 function tab(name){
  if(name!=="sets"&&!selected())name="sets";
- const current=document.querySelector(".screen.active");
  const target=$(name);
- if(current===target)return;
+
  const switchScreen=()=>{
   document.querySelectorAll(".screen").forEach(v=>v.classList.toggle("active",v===target));
   if(name==="sets")renderSets();
@@ -257,7 +332,8 @@ function tab(name){
   if(name==="cards")buildCards();
   if(name==="quiz"){$("quizTitle").textContent=selected().title;restoreQuiz();}
   state.view={setId:active,screen:name};save();
-  window.scrollTo(0,0);
+  $("workspaceTitle").textContent=name==="sets"?"Reviewer":selected().title;
+  renderSets();$("workspace").scrollTop=0;
  };
  if(document.startViewTransition&&!window.matchMedia("(prefers-reduced-motion: reduce)").matches){
   document.startViewTransition(switchScreen);
@@ -269,29 +345,20 @@ $("back").onclick=$("homeLink").onclick=()=>tab("sets");
 document.querySelectorAll("[data-detail-back]").forEach(b=>b.onclick=()=>tab("list"));
 $("openCards").onclick=()=>tab("cards");
 $("openQuiz").onclick=()=>tab("quiz");
-function open(s,which="list"){active=s;tab(which);}
+function open(s,which="list"){active=s;tab(which);if(mobileSidebar.matches)setSidebar(false)}
 
 
 function renderSets(){
  renderSources();
  const q=$("setSearch").value.trim().toLocaleLowerCase();
  const visible=state.sets.filter(s=>!s.sourceId).filter(s=>[s.title,s.description,s.id].some(t=>t.toLocaleLowerCase().includes(q)));
- const [field,order]=$("setSort").value.split(":");
- // Legacy sets were appended in creation order before timestamps were stored.
- if(field==="createdAt"&&order==="desc")visible.reverse();
- visible.sort((a,b)=>{
-  const left=a[field],right=b[field];
-  if(left===right)return 0;
-  if(left==null)return field==="createdAt"&&order==="asc"?-1:1;
-  if(right==null)return field==="createdAt"&&order==="asc"?1:-1;
-  return order==="asc"?left-right:right-left;
- });
- $("setGrid").innerHTML=visible.length?visible.map(s=>{
+ const sorted=sortSets(visible,$("setSort").value);
+ $("setGrid").innerHTML=sorted.length?sorted.map(s=>{
  const d=s.items.filter(x=>weak(progress(s.id,x.id))).length;
- return '<button class="set-open" data-open="'+esc(s.id)+'"><span class="tag">'+s.items.length+' 項目 · '+d+' 苦手</span><h3>'+esc(s.title)+'</h3><p class="muted small">'+esc(s.description)+'</p><span class="open-tail">開く →</span></button>';
+ return setButton(s,d);
  }).join(""):'<div class="panel muted">'+(state.sets.length?"一致する学習セットはありません。":"学習セットがありません。「作成」または「インポート」から追加してください。")+'</div>';
 }
-$("setSearch").oninput=renderSets;
+$("setSearch").oninput=()=>{if($("setSearch").value.trim()){$("localSection").open=true;$("webSection").open=true}renderSets()};
 const setSort=$("setSort");
 try{
  const savedSort=localStorage.getItem(SORT_KEY);
@@ -461,13 +528,68 @@ $("showExport").onclick=()=>{$("exportDialog").showModal()};
 document.querySelectorAll("[data-close-dialog]").forEach(b=>b.onclick=()=>$(b.dataset.closeDialog).close());
 for(const name of ["createDialog","importDialog","exportDialog"]){const d=$(name);d.addEventListener("click",e=>{if(e.target===d)d.close()})}
 $("createDialog").addEventListener("close",()=>{$("createForm").reset()});
+const UI_KEY='kntt.reviewer.sidebar.v1';
+let preferences={};try{preferences=JSON.parse(localStorage.getItem(UI_KEY)||'{}')||{}}catch{}
+function savePreferences(){try{localStorage.setItem(UI_KEY,JSON.stringify(preferences))}catch{}}
+const mobileSidebar=matchMedia('(max-width:760px)');
+function setSidebar(visible,persist=true){
+ document.body.classList.toggle('sidebar-hidden',!visible);
+ $("sidebar").hidden=!visible;
+ document.querySelector(".right-pane").inert=visible&&mobileSidebar.matches;
+ $("toggleSidebar").setAttribute('aria-expanded',String(visible));
+ $("sidebarBackdrop").hidden=!visible||!mobileSidebar.matches;
+ if(persist&&!mobileSidebar.matches){preferences.hidden=!visible;savePreferences()}
+}
+$("toggleSidebar").onclick=()=>{setSidebar($("sidebar").hidden);if(mobileSidebar.matches&&!$("sidebar").hidden)$("closeSidebar").focus()};
+$("closeSidebar").onclick=()=>{setSidebar(false);$("toggleSidebar").focus()};
+$("sidebarBackdrop").onclick=()=>{setSidebar(false);$("toggleSidebar").focus()};
+$("browseSets").onclick=()=>{setSidebar(true);$("setSearch").focus()};
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&mobileSidebar.matches&&!document.querySelector('dialog[open]')){setSidebar(false);$("toggleSidebar").focus()}});
+mobileSidebar.addEventListener('change',()=>setSidebar(!mobileSidebar.matches&&!preferences.hidden,false));
+setSidebar(!mobileSidebar.matches&&!preferences.hidden,false);
+for(const id of ['localSection','webSection']){
+ $(id).open=preferences[id]!==false;
+ $(id).addEventListener('toggle',()=>{preferences[id]=$(id).open;savePreferences()});
+}
+$("webSort").value=preferences.webSort||'createdAt:desc';
+$("webSort").onchange=()=>{preferences.webSort=$("webSort").value;savePreferences();renderSources()};
+$("sources").addEventListener('toggle',e=>{
+ const id=e.target.dataset.sourceSection;if(!id||!e.target.isConnected)return;
+ const folded=new Set(preferences.folded||[]);
+ if(e.target.open)folded.delete(id);else folded.add(id);
+ preferences.folded=[...folded];savePreferences();
+},true);
 const syncing=new Set();
+function sortSets(sets,value){
+ const [field,order]=value.split(':');
+ const result=[...sets];
+ if(field==='createdAt'&&order==='desc')result.reverse();
+ return result.sort((a,b)=>{
+ const left=a[field],right=b[field];
+ if(field==='title')return String(left).localeCompare(String(right),'ja')*(order==='asc'?1:-1);
+ if(left===right)return 0;
+ if(left==null)return field==='createdAt'&&order==='asc'?-1:1;
+ if(right==null)return field==='createdAt'&&order==='asc'?1:-1;
+ return order==='asc'?left-right:right-left;
+ });
+}
+function setButton(s,d=null){
+ return '<button class="set-open" data-open="'+esc(s.id)+'"'+(s.id===active&&state.view?.screen!=='sets'?' aria-current="page"':'')+'><h3>'+esc(s.title)+'</h3><span class="tag">'+s.items.length+' 項目'+(d===null?'':' · '+d+' 苦手')+'</span></button>';
+}
 function renderSources(){
  const q=$("setSearch").value.trim().toLocaleLowerCase();
- $("sources").innerHTML=(state.sources||[]).map(source=>{
- const sets=state.sets.filter(s=>s.sourceId===source.id&&[s.title,s.description,source.name].some(t=>t.toLocaleLowerCase().includes(q)));
- return '<section class="panel stack"><div class="row"><h3>'+esc(source.name)+'</h3><div class="actions"><button data-sync="'+esc(source.id)+'" '+(syncing.has(source.id)?'disabled':'')+'>同期</button><button data-unsubscribe="'+esc(source.id)+'">登録解除</button></div></div><p class="muted small" style="overflow-wrap:anywhere">'+esc(source.url)+'</p><p class="small" role="status">'+esc(syncing.has(source.id)?'同期中…':source.error|| (source.syncedAt?'最終同期: '+new Date(source.syncedAt).toLocaleString():'未同期'))+'</p><div class="set-grid">'+sets.map(s=>'<button class="set-open" data-open="'+esc(s.id)+'"><span class="tag">'+s.items.length+' 項目</span><h3>'+esc(s.title)+'</h3><p class="muted small">'+esc(s.description)+'</p></button>').join('')+'</div><button data-copy="'+esc(source.id)+'">ローカルへコピー</button></section>';
- }).join('')||'<p class="muted">URLを登録して教材を同期できます。</p>';
+ const [field,order]=$("webSort").value.split(':');
+ const sources=[...(state.sources||[])];
+ sources.sort((a,b)=>{
+ if(field==='title')return a.name.localeCompare(b.name,'ja')*(order==='asc'?1:-1);
+ const score=source=>Math.max(0,...state.sets.filter(s=>s.sourceId===source.id).map(s=>s[field]||0));
+ return (score(a)-score(b))*(order==='asc'?1:-1);
+ });
+ $("sources").innerHTML=sources.map(source=>{
+ const sets=sortSets(state.sets.filter(s=>s.sourceId===source.id&&[s.title,s.description,source.name].some(t=>t.toLocaleLowerCase().includes(q))),$("webSort").value);
+ const folded=preferences.folded?.includes(source.id)&&!q;
+ return '<details class="source-group" data-source-section="'+esc(source.id)+'" '+(folded?'':'open')+'><summary>'+esc(source.name)+'</summary><div class="set-grid">'+sets.map(s=>setButton(s)).join('')+'</div><div class="source-meta">'+esc(syncing.has(source.id)?'同期中…':source.error||(source.syncedAt?'最終同期: '+new Date(source.syncedAt).toLocaleString():'未同期'))+'</div><details><summary class="source-meta">配信元の操作</summary><p class="source-meta">'+esc(source.url)+'</p><div class="source-tools"><button data-sync="'+esc(source.id)+'" '+(syncing.has(source.id)?'disabled':'')+'>同期</button><button data-copy="'+esc(source.id)+'">ローカルへコピー</button><button data-unsubscribe="'+esc(source.id)+'">登録解除</button></div></details></details>';
+ }).join('')||'<p class="muted small">URLを登録して教材を同期できます。</p>';
 }
 function remoteInputs(raw){
  const inputs=Array.isArray(raw?.sets)?raw.sets:Array.isArray(raw?.items)?[{title:raw.title||"取り込み教材",description:raw.description,items:raw.items}]:Array.isArray(raw)?[{title:"取り込み教材",items:raw}]:null;
