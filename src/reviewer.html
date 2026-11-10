@@ -256,6 +256,13 @@ dialog[open]{display:flex;flex-direction:column}
 .set-menu-actions>button{display:block;text-align:left;padding:11px 12px;border:0;background:transparent;font-size:.85rem}
 .set-menu-actions>p{padding:5px 12px 8px;line-height:1.6}
 @media(pointer:coarse){.set-menu-button{min-width:32px;min-height:38px}}
+
+/* Study uses the entire app viewport, preserving the sidebar preference on return. */
+.study-mode .app-shell{grid-template-columns:0 minmax(0,1fr)}
+.study-mode .sidebar-rail{visibility:hidden;pointer-events:none;transition:none}
+.study-mode .workspace-header,.study-mode .sidebar-backdrop{display:none}
+.study-mode #workspace{padding:max(12px,env(safe-area-inset-top)) clamp(12px,2.5vw,36px) max(12px,env(safe-area-inset-bottom));overflow:hidden}
+@media(max-width:760px){.study-mode .app-shell{grid-template-columns:minmax(0,1fr)}}
 </style></head><body>
 <div class="app-shell">
 <div class="sidebar-rail"><aside id="sidebar" aria-label="学習セットのサイドバー">
@@ -415,6 +422,8 @@ function tab(name){
 
  const switchScreen=()=>{
   document.querySelectorAll(".screen").forEach(v=>v.classList.toggle("active",v===target));
+  document.body.classList.toggle('study-mode',name==='cards'||name==='quiz');
+  setSidebar(!document.body.classList.contains('sidebar-hidden'),false);
   if(name==="sets")renderSets();
   if(name==="list")renderList();
   if(name==="cards")buildCards();
@@ -755,13 +764,14 @@ let preferences={};try{preferences=JSON.parse(localStorage.getItem(UI_KEY)||'{}'
 function savePreferences(){try{localStorage.setItem(UI_KEY,JSON.stringify(preferences))}catch{}}
 const mobileSidebar=matchMedia('(max-width:760px)');
 function setSidebar(visible,persist=true){
+ const studying=document.body.classList.contains('study-mode');
  document.body.classList.toggle('sidebar-hidden',!visible);
- $("sidebar").inert=!visible;
- $("sidebar").setAttribute('aria-hidden',String(!visible));
+ $("sidebar").inert=studying||!visible;
+ $("sidebar").setAttribute('aria-hidden',String(studying||!visible));
  $(visible?"sidebarToggleSlot":"workspaceToggleSlot").append($("toggleSidebar"));
- document.querySelector(".right-pane").inert=visible&&mobileSidebar.matches;
- $("toggleSidebar").setAttribute('aria-expanded',String(visible));
- $("sidebarBackdrop").inert=!visible||!mobileSidebar.matches;
+ document.querySelector(".right-pane").inert=!studying&&visible&&mobileSidebar.matches;
+ $("toggleSidebar").setAttribute('aria-expanded',String(visible&&!studying));
+ $("sidebarBackdrop").inert=studying||!visible||!mobileSidebar.matches;
  if(persist&&!mobileSidebar.matches){preferences.hidden=!visible;savePreferences()}
 }
 $("toggleSidebar").onclick=()=>{setSidebar(document.body.classList.contains('sidebar-hidden'));$("toggleSidebar").focus()};
@@ -776,6 +786,7 @@ $("toggleSearch").onclick=()=>setSearchOpen(!$("sidebarSearch").classList.contai
 $("browseSets").onclick=()=>{setSidebar(true);$("toggleSearch").focus()};
 document.addEventListener('keydown',e=>{
  if(e.key!=='Escape'||document.querySelector('dialog[open]'))return;
+ if(document.body.classList.contains('study-mode')){tab('list');return}
  if($("sidebarSearch").classList.contains('open')){setSearchOpen(false);return}
  if(mobileSidebar.matches){setSidebar(false);$("toggleSidebar").focus()}
 });

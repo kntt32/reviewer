@@ -35,6 +35,7 @@ for(const viewport of [{width:1440,height:1000},{width:820,height:1180},{width:3
  const overflow=await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth);assert.equal(overflow,false);
  assert.equal(await page.locator('.choice').first().evaluate(el=>getComputedStyle(el).touchAction),'manipulation');
  const choice=await page.locator('.choice').first().boundingBox();assert.ok(choice.y+choice.height<=viewport.height);
+ await page.locator('#quiz [data-detail-back]').click();
  if(mobile)await page.locator('#toggleSidebar').click();
  assert.equal(await page.locator('#setSearch').isVisible(),false);
  await page.locator('#toggleSearch').click();await page.locator('#setSearch').fill('Alpha');assert.equal(await page.locator('#setGrid h3').count(),1);
