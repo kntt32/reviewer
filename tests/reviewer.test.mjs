@@ -34,3 +34,12 @@ test('duplicate names rejected and explicit IDs support renamed content',()=>{
  assert.equal(c.state.sets[0].id,old.id);assert.equal(c.state.sets[0].items[0].id,old.items[0].id);
  assert.throws(()=>c.reconcile(source,{sets:[{title:'A',items:[]},{title:'A',items:[]}]}));
 });
+test('remote display names and dismissed sets survive synchronization',()=>{
+ const c=harness(),source={id:'remote',cardIds:{},titleOverrides:{s:'My English'},dismissedKeys:['hidden']};
+ const raw={sets:[{id:'s',title:'Original',items:[card]},{id:'hidden',title:'Hidden',items:[card]}]};
+ c.reconcile(source,raw);
+ assert.equal(c.state.sets.length,1);assert.equal(c.state.sets[0].title,'My English');
+ const id=c.state.sets[0].id;
+ c.reconcile(source,{sets:raw.sets.map(s=>({...s,title:s.title+' updated'}))});
+ assert.equal(c.state.sets.length,1);assert.equal(c.state.sets[0].id,id);assert.equal(c.state.sets[0].title,'My English');
+});
