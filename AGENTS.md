@@ -13,5 +13,5 @@
 
 - Use HTML dialogs or inline messages instead of native alert/confirm/prompt APIs. Keep dialog actions outside the scrolling body and visible on small screens.
 - Keep card explanation/edit/delete actions as accessible icons on the right; explanations open a dedicated dialog.
-- Use the section sort icon and HTML option dialog rather than an always-visible sort select.
+- Use small anchored HTML popovers for the section sort icon and per-set ellipsis menu. Keep edit forms and confirmations as dialogs.
 - Per-set sidebar menus may rename a remote set's local display label or dismiss that set on this device; preserve these choices across synchronization without modifying the source JSON or allowing remote card editing.

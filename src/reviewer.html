@@ -263,6 +263,19 @@ dialog[open]{display:flex;flex-direction:column}
 .study-mode .workspace-header,.study-mode .sidebar-backdrop{display:none}
 .study-mode #workspace{padding:max(12px,env(safe-area-inset-top)) clamp(12px,2.5vw,36px) max(12px,env(safe-area-inset-bottom));overflow:hidden}
 @media(max-width:760px){.study-mode .app-shell{grid-template-columns:minmax(0,1fr)}}
+
+/* Small anchored menus; forms and destructive confirmations remain modal. */
+.floating-menu{position:fixed;inset:auto;margin:0;width:min(236px,calc(100vw - 16px));max-height:calc(100dvh - 16px);padding:5px;border:1px solid var(--line);border-radius:12px;background:var(--panel);color:var(--text);box-shadow:0 8px 30px #0002,0 2px 6px #0001;overflow-y:auto;overscroll-behavior:contain;opacity:0;transform:translateY(-4px) scale(.98);transition:opacity 140ms ease,transform 160ms var(--ease),display 160ms allow-discrete,overlay 160ms allow-discrete}
+.floating-menu:popover-open{opacity:1;transform:none}
+.floating-menu::backdrop{background:transparent}
+.menu-heading{font-size:.72rem;font-weight:600;color:var(--muted);margin:0;padding:8px 9px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.floating-menu .sort-choices,.floating-menu .set-menu-actions{display:grid;gap:2px;padding:0}
+.floating-menu button{min-height:34px;border-radius:7px;padding:8px 10px;font-size:.8rem;border:0;background:transparent;text-align:left}
+.floating-menu button:hover,.floating-menu button:focus-visible{background:var(--soft)}
+.floating-menu .sort-choices button[aria-checked="true"]{background:var(--soft)}
+.floating-menu>p{font-size:.7rem;line-height:1.5;margin:0;padding:3px 9px 8px}
+@starting-style{.floating-menu:popover-open{opacity:0;transform:translateY(-4px) scale(.98)}}
+@media(prefers-reduced-motion:reduce){.floating-menu{transition:none!important}}
 </style></head><body>
 <div class="app-shell">
 <div class="sidebar-rail"><aside id="sidebar" aria-label="学習セットのサイドバー">
@@ -274,14 +287,14 @@ dialog[open]{display:flex;flex-direction:column}
 <button id="showExport"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V4m-5 5 5-5 5 5M4 17v4h16v-4"/></svg><span>エクスポート</span></button>
 </div>
 
-<details id="localSection" class="sidebar-section" open><summary>ローカル</summary><button type="button" class="sort-toggle icon-btn" data-sort="setSort" aria-label="ローカルの並び順を選ぶ" aria-haspopup="dialog"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 4v16m-4-4 4 4 4-4M17 20V4m-4 4 4-4 4 4"/></svg></button><select hidden id="setSort" aria-label="ローカルの並び順"><option value="title:asc">名前 · 昇順</option><option value="title:desc">名前 · 降順</option><option value="createdAt:desc">作成日時 · 新しい順</option>
+<details id="localSection" class="sidebar-section" open><summary>ローカル</summary><button type="button" class="sort-toggle icon-btn" data-sort="setSort" aria-label="ローカルの並び順を選ぶ" aria-haspopup="menu" aria-expanded="false"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 4v16m-4-4 4 4 4-4M17 20V4m-4 4 4-4 4 4"/></svg></button><select hidden id="setSort" aria-label="ローカルの並び順"><option value="title:asc">名前 · 昇順</option><option value="title:desc">名前 · 降順</option><option value="createdAt:desc">作成日時 · 新しい順</option>
 <option value="createdAt:asc">作成日時 · 古い順</option>
 <option value="lastStudiedAt:desc">最終学習日時 · 新しい順</option>
 <option value="lastStudiedAt:asc">最終学習日時 · 古い順</option>
 <option value="updatedAt:desc">最終変更日時 · 新しい順</option>
 <option value="updatedAt:asc">最終変更日時 · 古い順</option>
 </select><div id="setGrid" class="set-grid"></div></details>
-<details id="webSection" class="sidebar-section" open><summary>ウェブ</summary><button type="button" class="sort-toggle icon-btn" data-sort="webSort" aria-label="ウェブの並び順を選ぶ" aria-haspopup="dialog"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 4v16m-4-4 4 4 4-4M17 20V4m-4 4 4-4 4 4"/></svg></button><select hidden id="webSort" aria-label="ウェブの並び順"><option value="title:asc">名前 · 昇順</option><option value="title:desc">名前 · 降順</option><option value="createdAt:desc">作成日時 · 新しい順</option>
+<details id="webSection" class="sidebar-section" open><summary>ウェブ</summary><button type="button" class="sort-toggle icon-btn" data-sort="webSort" aria-label="ウェブの並び順を選ぶ" aria-haspopup="menu" aria-expanded="false"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 4v16m-4-4 4 4 4-4M17 20V4m-4 4 4-4 4 4"/></svg></button><select hidden id="webSort" aria-label="ウェブの並び順"><option value="title:asc">名前 · 昇順</option><option value="title:desc">名前 · 降順</option><option value="createdAt:desc">作成日時 · 新しい順</option>
 <option value="createdAt:asc">作成日時 · 古い順</option>
 <option value="lastStudiedAt:desc">最終学習日時 · 新しい順</option>
 <option value="lastStudiedAt:asc">最終学習日時 · 古い順</option>
@@ -348,9 +361,9 @@ dialog[open]{display:flex;flex-direction:column}
 <div class="actions"><button id="reset">学習履歴を初期化</button><button id="clear" class="danger">すべて削除</button></div>
 </div></dialog>
 <dialog id="sourceDialog"><form id="sourceForm" class="form"><h2>ネットの教材を登録</h2><label>セクション名<input id="sourceName" required></label><label>JSONのURL<input id="sourceUrl" type="url" required placeholder="https://example.com/sets.json"></label><p class="muted small">公開JSONを指定してください。配信元でCORSの許可が必要です。</p><p id="sourceMessage" role="status"></p><div class="actions"><button type="button" data-close-dialog="sourceDialog">閉じる</button><button id="sourceSubmit" class="primary">登録して同期</button></div></form></dialog><dialog id="setDialog"><form id="setForm" class="form"><h2 id="setFormTitle">学習セット</h2><label>名前<input id="sTitle" required></label><label>説明<textarea id="sDesc" rows="3"></textarea></label><div class="actions"><button type="button" id="cancelSet">キャンセル</button><button class="primary">保存</button></div></form></dialog><dialog id="itemDialog"><form id="itemForm" class="form"><h2>カードの編集</h2><p id="itemMessage" class="danger" role="alert" hidden></p><label>種類<select id="iType"><option value="word">単語・用語</option><option value="grammar">構文・概念</option></select></label><label>表面<input id="iTerm" required></label><label>裏面<input id="iMeaning" required></label><label>解説<textarea id="iExplanation"></textarea></label><label>例・参考情報<textarea id="iExample"></textarea></label><label>例の解説<textarea id="iTranslation"></textarea></label><label>クイズの問題<input id="iQuestion" required></label><label>選択肢（4行）<textarea id="iOptions" required></textarea></label><label>正解<select id="iAnswer"><option value="0">1番</option><option value="1">2番</option><option value="2">3番</option><option value="3">4番</option></select></label><div class="actions"><button type="button" id="cancelItem">キャンセル</button><button class="primary">保存</button></div></form></dialog><dialog id="confirmDialog" aria-labelledby="confirmTitle" aria-describedby="confirmMessage"><div class="dialog-layout"><div class="dialog-head"><h2 id="confirmTitle">確認</h2></div><div class="dialog-body"><p id="confirmMessage" class="detail"></p></div><div class="dialog-footer actions"><button id="confirmCancel" type="button" autofocus>キャンセル</button><button id="confirmAccept" type="button" class="primary">OK</button></div></div></dialog>
-<dialog id="sortDialog" aria-labelledby="sortTitle"><div class="dialog-layout"><div class="dialog-head"><h2 id="sortTitle">並び順</h2></div><div id="sortChoices" class="dialog-body sort-choices" role="group" aria-labelledby="sortTitle"></div><div class="dialog-footer actions"><button type="button" data-close-dialog="sortDialog">閉じる</button></div></div></dialog>
+<div id="sortPopover" popover="auto" class="floating-menu" aria-labelledby="sortTitle"><h2 id="sortTitle" class="menu-heading">並び順</h2><div id="sortChoices" class="sort-choices" role="menu" aria-labelledby="sortTitle"></div></div>
 <dialog id="explanationDialog" aria-labelledby="explanationTitle"><div class="dialog-layout"><div class="dialog-head"><h2 id="explanationTitle"></h2></div><div class="dialog-body"><p id="explanationMeaning" class="detail"></p><section id="explanationTextSection"><h3>解説</h3><p id="explanationText" class="detail"></p></section><section id="explanationExampleSection"><h3>例・参考情報</h3><p id="explanationExample" class="example"></p><p id="explanationTranslation" class="detail muted"></p></section><p id="explanationEmpty" class="muted" hidden>解説・例はまだありません。</p></div><div class="dialog-footer actions"><button type="button" data-close-dialog="explanationDialog">閉じる</button></div></div></dialog>
-<dialog id="setActionsDialog" aria-labelledby="setActionsTitle"><div class="dialog-layout"><div class="dialog-head"><h2 id="setActionsTitle"></h2></div><div class="dialog-body set-menu-actions"><p id="setActionsHint" class="muted small" hidden>名前変更と削除は、この端末の表示に適用されます。配信元のJSONは変更しません。</p><button type="button" id="renameSetAction">名前変更</button><button type="button" id="exportSetAction">このセットをエクスポート</button><button type="button" id="deleteSetAction" class="danger">削除</button></div><div class="dialog-footer actions"><button type="button" data-close-dialog="setActionsDialog">閉じる</button></div></div></dialog>
+<div id="setActionsPopover" popover="auto" class="floating-menu" aria-labelledby="setActionsTitle"><h2 id="setActionsTitle" class="menu-heading"></h2><p id="setActionsHint" class="muted small" hidden>名前変更と削除はこの端末内に適用します。</p><div class="set-menu-actions" role="menu" aria-labelledby="setActionsTitle"><button type="button" id="renameSetAction" role="menuitem">名前変更</button><button type="button" id="exportSetAction" role="menuitem">このセットをエクスポート</button><button type="button" id="deleteSetAction" class="danger" role="menuitem">削除</button></div></div>
 <dialog id="renameDialog" aria-labelledby="renameTitle"><form id="renameForm" class="dialog-layout"><div class="dialog-head"><h2 id="renameTitle">名前変更</h2></div><div class="dialog-body"><label>名前<input id="renameInput" required maxlength="200"></label></div><div class="dialog-footer actions"><button type="button" data-close-dialog="renameDialog">キャンセル</button><button type="submit" class="primary">保存</button></div></form></dialog>
 <script>
 (()=>{
@@ -467,7 +480,7 @@ setSort.onchange=()=>{
  renderSets();
 };
 $("setGrid").onclick=e=>{
- const menu=e.target.closest('[data-set-menu]');if(menu){showSetActions(menu.dataset.setMenu);return}
+ const menu=e.target.closest('[data-set-menu]');if(menu){showSetActions(menu.dataset.setMenu,menu);return}
  const b=e.target.closest('[data-open]');if(b)open(b.dataset.open);
 };
 
@@ -588,10 +601,10 @@ $("startQuiz").onclick=startQuiz;
 $("quizScope").onchange=()=>{delete session().quiz;save();resetQuizView()};
 function showSet(id){editingSet=id||"";let s=state.sets.find(x=>x.id===id);$("sTitle").value=s?.title||"";$("sDesc").value=s?.description||"";$("setDialog").showModal()}
 let menuSetId='',renamingSetId='';
-function showSetActions(id){
+function showSetActions(id,trigger){
  const s=state.sets.find(s=>s.id===id);if(!s)return;
  menuSetId=id;$("setActionsTitle").textContent=s.title;$("setActionsHint").hidden=!s.sourceId;
- $("setActionsDialog").showModal();
+ showMenu($("setActionsPopover"),trigger);
 }
 function updateSetHeading(s){
  if(active!==s.id||state.view?.screen==='sets')return;
@@ -613,7 +626,7 @@ async function removeSet(id){
 }
 $("renameSetAction").onclick=()=>{
  const s=state.sets.find(s=>s.id===menuSetId);if(!s)return;
- renamingSetId=s.id;$("renameInput").value=s.title;$("setActionsDialog").close();
+ renamingSetId=s.id;$("renameInput").value=s.title;$("setActionsPopover").hidePopover();
  $("renameDialog").showModal();$("renameInput").focus();$("renameInput").select();
 };
 $("renameForm").onsubmit=e=>{
@@ -623,10 +636,10 @@ $("renameForm").onsubmit=e=>{
  if(source)source.titleOverrides={...source.titleOverrides,[s.remoteKey]:title};
  s.title=title;s.updatedAt=Date.now();save();renderSets();updateSetHeading(s);$("renameDialog").close();
 };
-$("deleteSetAction").onclick=()=>{const id=menuSetId;$("setActionsDialog").close();removeSet(id)};
+$("deleteSetAction").onclick=()=>{const id=menuSetId;$("setActionsPopover").hidePopover();removeSet(id)};
 $("exportSetAction").onclick=()=>{
  const s=state.sets.find(s=>s.id===menuSetId);if(!s)return;
- $("setActionsDialog").close();
+ $("setActionsPopover").hidePopover();
  const name=s.title.replace(/[^\p{L}\p{N}._-]+/gu,'-').slice(0,80)||'reviewer-set';
  download(name+'.json',{sets:[{title:s.title,description:s.description,items:s.items.map(({id,...fields})=>fields)}]});
 };
@@ -737,6 +750,54 @@ function askConfirmation(message,{title='確認',accept='OK',cancel='キャン�
 }
 $("confirmAccept").onclick=()=>$("confirmDialog").close('accept');
 $("confirmCancel").onclick=()=>$("confirmDialog").close('cancel');
+const menuAnchors=new WeakMap();
+let pressedMenu=null,pressedMenuTrigger=null;
+document.addEventListener('pointerdown',e=>{
+ pressedMenu=null;pressedMenuTrigger=null;
+ for(const menu of document.querySelectorAll('.floating-menu:popover-open')){
+ const trigger=menuAnchors.get(menu);
+ if(trigger?.contains(e.target)){pressedMenu=menu;pressedMenuTrigger=trigger;break}
+ }
+},true);
+function placeMenu(menu){
+ const trigger=menuAnchors.get(menu);if(!trigger?.isConnected){menu.hidePopover();return}
+ menu.style.maxHeight='';
+ const rect=trigger.getBoundingClientRect(),width=menu.offsetWidth;
+ const belowSpace=innerHeight-rect.bottom-14,aboveSpace=rect.top-14;
+ const opensBelow=menu.offsetHeight<=belowSpace||belowSpace>=aboveSpace;
+ menu.style.maxHeight=Math.min(innerHeight-16,Math.max(80,opensBelow?belowSpace:aboveSpace))+'px';
+ const height=menu.offsetHeight;
+ const left=Math.max(8,Math.min(rect.right-width,innerWidth-width-8));
+ const below=rect.bottom+6,above=rect.top-height-6;
+ const top=Math.max(8,Math.min(opensBelow?below:above,innerHeight-height-8));
+ menu.style.left=left+'px';menu.style.top=top+'px';
+ menu.style.transformOrigin=(rect.right-left)+'px '+(top>=rect.bottom?'top':'bottom');
+}
+function showMenu(menu,trigger){
+ const toggleOff=(menu.matches(':popover-open')&&menuAnchors.get(menu)===trigger)||(pressedMenu===menu&&pressedMenuTrigger===trigger);
+ pressedMenu=null;pressedMenuTrigger=null;
+ if(toggleOff){menu.hidePopover();return}
+ menuAnchors.set(menu,trigger);menu.showPopover();placeMenu(menu);
+ trigger.setAttribute('aria-expanded','true');trigger.setAttribute('aria-controls',menu.id);
+ menu.querySelector('[aria-checked="true"],button')?.focus({preventScroll:true});
+}
+for(const menu of document.querySelectorAll('.floating-menu')){
+ menu.addEventListener('beforetoggle',e=>{
+ if(e.newState!=='closed')return;
+ const trigger=menuAnchors.get(menu);trigger?.setAttribute('aria-expanded','false');
+ if(menu.contains(document.activeElement)&&trigger?.isConnected)trigger.focus({preventScroll:true});
+ });
+ menu.addEventListener('keydown',e=>{
+ if(!['ArrowDown','ArrowUp','Home','End'].includes(e.key))return;
+ e.preventDefault();const buttons=[...menu.querySelectorAll('button:not(:disabled)')];
+ let i=buttons.indexOf(document.activeElement);
+ i=e.key==='Home'?0:e.key==='End'?buttons.length-1:(i+(e.key==='ArrowUp'?-1:1)+buttons.length)%buttons.length;
+ buttons[i]?.focus();
+ });
+}
+function repositionMenus(){document.querySelectorAll('.floating-menu:popover-open').forEach(placeMenu)}
+window.addEventListener('resize',repositionMenus);
+document.addEventListener('scroll',e=>{if(!e.target.closest?.('.floating-menu'))repositionMenus()},true);
 let sortTarget='';
 function updateSortButtons(){
  document.querySelectorAll('[data-sort]').forEach(b=>{
@@ -746,13 +807,13 @@ function updateSortButtons(){
 document.querySelectorAll('[data-sort]').forEach(b=>b.onclick=()=>{
  sortTarget=b.dataset.sort;const select=$(sortTarget);
  $("sortTitle").textContent=(sortTarget==='setSort'?'ローカル':'ウェブ')+'の並び順';
- $("sortChoices").innerHTML=Array.from(select.options).map(o=>'<button type="button" data-sort-value="'+esc(o.value)+'" aria-pressed="'+(o.selected?'true':'false')+'"><span>'+esc(o.textContent)+'</span><span aria-hidden="true">'+(o.selected?'✓':'')+'</span></button>').join('');
- $("sortDialog").showModal();$("sortChoices").querySelector('[aria-pressed="true"]')?.focus();
+ $("sortChoices").innerHTML=Array.from(select.options).map(o=>'<button type="button" data-sort-value="'+esc(o.value)+'" role="menuitemradio" aria-checked="'+(o.selected?'true':'false')+'" aria-pressed="'+(o.selected?'true':'false')+'"><span>'+esc(o.textContent)+'</span><span aria-hidden="true">'+(o.selected?'✓':'')+'</span></button>').join('');
+ showMenu($("sortPopover"),b);$("sortChoices").querySelector('[aria-pressed="true"]')?.focus();
 });
 $("sortChoices").onclick=e=>{
  const b=e.target.closest('[data-sort-value]');if(!b)return;
  const select=$(sortTarget);select.value=b.dataset.sortValue;select.dispatchEvent(new Event('change'));
- updateSortButtons();$("sortDialog").close();
+ updateSortButtons();$("sortPopover").hidePopover();
 };
 $("showImport").onclick=()=>{$("importDialog").showModal();$("jsonInput").focus()};
 $("showExport").onclick=()=>{$("exportDialog").showModal()};
@@ -785,7 +846,7 @@ function setSearchOpen(open){
 $("toggleSearch").onclick=()=>setSearchOpen(!$("sidebarSearch").classList.contains('open'));
 $("browseSets").onclick=()=>{setSidebar(true);$("toggleSearch").focus()};
 document.addEventListener('keydown',e=>{
- if(e.key!=='Escape'||document.querySelector('dialog[open]'))return;
+ if(e.key!=='Escape'||document.querySelector('dialog[open],[popover]:popover-open'))return;
  if(document.body.classList.contains('study-mode')){tab('list');return}
  if($("sidebarSearch").classList.contains('open')){setSearchOpen(false);return}
  if(mobileSidebar.matches){setSidebar(false);$("toggleSidebar").focus()}
@@ -794,6 +855,7 @@ mobileSidebar.addEventListener('change',()=>setSidebar(!mobileSidebar.matches&&!
 setSidebar(!mobileSidebar.matches&&!preferences.hidden,false);
 for(const id of ['localSection','webSection']){
  $(id).open=preferences[id]!==false;
+ $(id).querySelector(':scope > summary').onclick=e=>{e.preventDefault();$(id).open=!$(id).open;preferences[id]=$(id).open;savePreferences()};
  $(id).addEventListener('toggle',()=>{preferences[id]=$(id).open;savePreferences()});
 }
 $("webSort").value=preferences.webSort||'createdAt:desc';
@@ -818,7 +880,7 @@ function sortSets(sets,value){
  });
 }
 function setButton(s,d=null){
- return '<div class="set-row"><button class="set-open" data-open="'+esc(s.id)+'"'+(s.id===active&&state.view?.screen!=='sets'?' aria-current="page"':'')+'><h3>'+esc(s.title)+'</h3><span class="tag">'+s.items.length+' 項目'+(d===null?'':' · '+d+' 苦手')+'</span></button><button type="button" class="set-menu-button icon-btn" data-set-menu="'+esc(s.id)+'" aria-label="'+esc(s.title)+'のメニュー" title="セットの操作" aria-haspopup="dialog"><svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg></button></div>';
+ return '<div class="set-row"><button class="set-open" data-open="'+esc(s.id)+'"'+(s.id===active&&state.view?.screen!=='sets'?' aria-current="page"':'')+'><h3>'+esc(s.title)+'</h3><span class="tag">'+s.items.length+' 項目'+(d===null?'':' · '+d+' 苦手')+'</span></button><button type="button" class="set-menu-button icon-btn" data-set-menu="'+esc(s.id)+'" aria-label="'+esc(s.title)+'のメニュー" title="セットの操作" aria-haspopup="menu" aria-expanded="false"><svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg></button></div>';
 }
 function renderSources(){
  const q=$("setSearch").value.trim().toLocaleLowerCase();
@@ -886,7 +948,7 @@ $("sourceForm").onsubmit=async e=>{
  }catch(e){$("sourceMessage").textContent=e.message}
 };
 $("sources").onclick=async e=>{
- const menu=e.target.closest('[data-set-menu]');if(menu){showSetActions(menu.dataset.setMenu);return}
+ const menu=e.target.closest('[data-set-menu]');if(menu){showSetActions(menu.dataset.setMenu,menu);return}
  const summary=e.target.closest('[data-source-section] > summary');
  if(summary){e.preventDefault();const section=summary.parentElement;section.open=!section.open;rememberSourceSection(section);return}
  const b=e.target.closest('button');if(!b)return;
