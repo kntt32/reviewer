@@ -67,6 +67,6 @@ PC・タブレット幅では左260pxのサイドバー、右に教材・学習�
 1. Fine-grained personal access tokenの対象に **kntt32/kntt-pages-dev** を選択する。
 2. Repository permissionsで **Contents: Read and write** を付与する。
 3. PATを **kntt32/reviewer → Settings → Secrets and variables → Actions** に `PAGES_DEPLOY_KEY` として登録する。Secret名は既存のままですが、値はSSH秘密鍵ではなくPATです。
-4. Actionsの **Build and copy Reviewer → Run workflow** から動作を確認する。
+4. Actionsの **Deploy → Run workflow** から動作を確認する。
 
 宛先checkoutは `ref: main` と `token: ${{ secrets.PAGES_DEPLOY_KEY }}` を指定し、HTTPSで取得・更新します。Reviewer自身のcheckoutには通常の `GITHUB_TOKEN` を使います。PATは有効期限に合わせて更新してください。宛先ブランチの保護規則が直接pushを禁止する場合は、PR経由の運用へ調整してください。

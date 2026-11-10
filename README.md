@@ -9,7 +9,11 @@
   <a href="docs/development.md">開発・ビルド</a>
 </p>
 <p align="center">
-  <a href="https://github.com/kntt32/reviewer/actions/workflows/publish.yml"><img src="https://github.com/kntt32/reviewer/actions/workflows/publish.yml/badge.svg" alt="ビルドと公開の状態"></a>
+  <a href="https://github.com/kntt32/reviewer/actions/workflows/publish.yml"><img src="https://github.com/kntt32/reviewer/actions/workflows/publish.yml/badge.svg" alt="Deploy の実行状態"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/github/license/kntt32/reviewer" alt="ライセンス: MIT"></a>
+  <a href="docs/development.md"><img src="https://img.shields.io/badge/Node.js-24-5FA04E?logo=nodedotjs&amp;logoColor=white" alt="ビルド環境: Node.js 24"></a>
+  <a href="src/reviewer.html"><img src="https://img.shields.io/badge/JavaScript-Vanilla-F7DF1E?logo=javascript&amp;logoColor=black" alt="Vanilla JavaScript"></a>
+  <a href="docs/development.md"><img src="https://img.shields.io/badge/build-single_HTML-555555?logo=html5&amp;logoColor=white" alt="単一HTMLビルド"></a>
 </p>
 
 ![Reviewer の学習画面。左のサイドバーで教材を選び、右側で学習する](docs/images/workspace.png)
@@ -97,4 +101,4 @@ npm run build
 
 ## ライセンス
 
-[MIT](LICENSE)
+[![License: MIT](https://img.shields.io/github/license/kntt32/reviewer)](LICENSE)

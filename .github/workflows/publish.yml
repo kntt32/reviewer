@@ -1,4 +1,4 @@
-name: Build and copy Reviewer
+name: Deploy
 on:
   push:
     branches: [main]
