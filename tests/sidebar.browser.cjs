@@ -21,8 +21,8 @@ for(const viewport of [{width:1440,height:1000},{width:820,height:1180},{width:3
  assert.equal(await page.locator('#sidebarToggleSlot #toggleSidebar').count(),1);assert.equal(await page.locator('#closeSidebar').count(),0);
  const side=await page.locator('#sidebar').boundingBox();assert.ok(side.width<=300);assert.ok(side.height>side.width*2);
  const buttons=await page.locator('.home-actions button').all();const boxes=await Promise.all(buttons.map(b=>b.boundingBox()));assert.ok(boxes[0].y<boxes[1].y&&boxes[1].y<boxes[2].y);
- await page.locator('#setSort').selectOption('title:asc');assert.equal(await page.locator('#setGrid h3').first().innerText(),'Alpha');
- await page.locator('#setSort').selectOption('title:desc');assert.equal(await page.locator('#setGrid h3').first().innerText(),'Beta');
+ await page.locator('[data-sort="setSort"]').click();await page.locator('[data-sort-value="title:asc"]').click();assert.equal(await page.locator('#setGrid h3').first().innerText(),'Alpha');
+ await page.locator('[data-sort="setSort"]').click();await page.locator('[data-sort-value="title:desc"]').click();assert.equal(await page.locator('#setGrid h3').first().innerText(),'Beta');
  await page.locator('#localSection>summary').click();assert.equal(await page.locator('#setGrid').isVisible(),false);
  await page.reload();if(mobile)await page.locator('#toggleSidebar').click();assert.equal(await page.locator('#setGrid').isVisible(),false);
  await page.locator('#localSection>summary').click();await page.locator('[data-open="a"]').click();
@@ -39,8 +39,8 @@ for(const viewport of [{width:1440,height:1000},{width:820,height:1180},{width:3
  assert.equal(await page.locator('#setSearch').isVisible(),false);
  await page.locator('#toggleSearch').click();await page.locator('#setSearch').fill('Alpha');assert.equal(await page.locator('#setGrid h3').count(),1);
  await page.locator('#toggleSearch').click();assert.equal(await page.locator('#setSearch').isVisible(),false);assert.equal(await page.locator('#setGrid h3').count(),2);
- await page.locator('#webSort').selectOption('title:asc');assert.equal(await page.locator('#sources .set-open h3').first().innerText(),'Another Web set');
- await page.locator('#webSort').selectOption('title:desc');assert.equal(await page.locator('#sources .set-open h3').first().innerText(),'Web set');
+ await page.locator('[data-sort="webSort"]').click();await page.locator('[data-sort-value="title:asc"]').click();assert.equal(await page.locator('#sources .set-open h3').first().innerText(),'Another Web set');
+ await page.locator('[data-sort="webSort"]').click();await page.locator('[data-sort-value="title:desc"]').click();assert.equal(await page.locator('#sources .set-open h3').first().innerText(),'Web set');
  await page.locator('#webSection>summary').click();assert.equal(await page.locator('#sources').isVisible(),false);await page.locator('#webSection>summary').click();
  await page.locator('[data-source-section]>summary').click();assert.equal(await page.locator('[data-open="r"]').isVisible(),false);
  await page.reload();if(mobile)await page.locator('#toggleSidebar').click();assert.equal(await page.locator('[data-open="r"]').isVisible(),false);

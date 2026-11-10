@@ -10,3 +10,7 @@
 - Remote content is read-only; users can copy it locally for editing.
 - Publish only `tools/reviewer.html` to kntt32/kntt-pages-dev through `.github/workflows/publish.yml`. Do not overwrite unrelated files.
 - Never commit credentials. The workflow uses the `PAGES_DEPLOY_KEY` repository secret with a fine-grained personal access token scoped to the destination repository and Contents read/write permission. Pass it as `token`, not `ssh-key`, to actions/checkout.
+
+- Use HTML dialogs or inline messages instead of native alert/confirm/prompt APIs. Keep dialog actions outside the scrolling body and visible on small screens.
+- Keep card explanation/edit/delete actions as accessible icons on the right; explanations open a dedicated dialog.
+- Use the section sort icon and HTML option dialog rather than an always-visible sort select.

@@ -223,6 +223,30 @@ dialog{border-radius:14px}.result{background:var(--soft)}
 @media(pointer:coarse){input,textarea,select,.set-search input,.sort-label select{font-size:16px}.home-actions button,#sidebar .set-open{min-height:38px}.sidebar-head .icon-btn{min-height:38px;min-width:38px}}
 @media(max-width:420px){.quiz-choices{grid-template-columns:minmax(0,1fr)}}
 @media(prefers-reduced-motion:reduce){.app-shell,#sidebar,.sidebar-rail,.sidebar-backdrop,.search-disclosure{transition:none!important}button{transition:none!important}}
+
+/* Dialog actions stay outside the scrolling content. */
+dialog{position:fixed;inset:auto;left:50%;top:var(--dialog-top,50%);translate:-50% -50%;margin:0;padding:0;overflow:hidden;max-height:min(90dvh,calc(var(--visual-height,100dvh) - 24px));width:min(570px,calc(100% - 24px))}
+dialog[open]{display:flex;flex-direction:column}
+.dialog-layout{display:flex;flex-direction:column;width:100%;max-height:inherit;min-height:0;gap:0}
+.dialog-head{flex:0 0 auto;padding:18px 20px 12px;border-bottom:1px solid var(--line)}
+.dialog-head h2{margin:0;font-size:1rem;overflow-wrap:anywhere;max-height:3.5em;overflow:auto}
+.dialog-body{flex:1 1 auto;min-height:0;overflow-y:auto;overscroll-behavior:contain;display:grid;gap:12px;padding:18px 20px}
+.dialog-body>p{margin:0}.dialog-body h3{font-size:.85rem;margin:0 0 8px}
+.dialog-body label{font-size:.85rem;font-weight:600}
+.dialog-body label>input,.dialog-body label>textarea,.dialog-body label>select{display:block;width:100%;margin-top:6px}
+.dialog-footer{flex:0 0 auto;margin:0;padding:12px 20px max(12px,env(safe-area-inset-bottom));border-top:1px solid var(--line);background:var(--panel);gap:8px}
+.dialog-footer button{min-height:40px;font-size:.85rem}
+.sidebar-section{position:relative}.sidebar-section>summary{padding-right:40px}
+.sort-toggle{position:absolute;top:1px;right:3px;background:transparent;border:0;color:var(--muted);min-width:28px;min-height:28px;padding:4px}
+.sort-choices{gap:4px;padding:10px}
+.sort-choices button{border:0;background:transparent;text-align:left;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:11px 12px;font-size:.85rem}
+.sort-choices button[aria-pressed="true"]{background:var(--soft);font-weight:600}
+#items .item{display:flex;flex-direction:row;align-items:flex-start;justify-content:space-between;gap:12px}
+.item-copy{display:grid;gap:8px;min-width:0;flex:1;overflow-wrap:anywhere}.item-copy p{margin:0;white-space:pre-wrap}
+.item-tools{display:flex;flex-shrink:0;gap:2px}
+.item-tools .icon-btn{min-width:32px;min-height:32px;padding:6px;border:0;background:transparent;color:var(--muted)}
+.item-tools .danger{color:#b44e58}
+@media(max-width:500px){.dialog-head{padding:14px 16px 10px}.dialog-body{padding:14px 16px}.dialog-footer{padding-left:16px;padding-right:16px}#items .item{gap:6px}.item-tools{gap:0}.item-tools .icon-btn{min-width:30px;min-height:36px;padding:6px}}
 </style></head><body>
 <div class="app-shell">
 <div class="sidebar-rail"><aside id="sidebar" aria-label="学習セットのサイドバー">
@@ -234,20 +258,20 @@ dialog{border-radius:14px}.result{background:var(--soft)}
 <button id="showExport"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V4m-5 5 5-5 5 5M4 17v4h16v-4"/></svg><span>エクスポート</span></button>
 </div>
 
-<details id="localSection" class="sidebar-section" open><summary>ローカル</summary><label class="sort-label">並び順<select id="setSort" aria-label="ローカルの並び順"><option value="title:asc">名前 · 昇順</option><option value="title:desc">名前 · 降順</option><option value="createdAt:desc">作成日時 · 新しい順</option>
+<details id="localSection" class="sidebar-section" open><summary>ローカル</summary><button type="button" class="sort-toggle icon-btn" data-sort="setSort" aria-label="ローカルの並び順を選ぶ" aria-haspopup="dialog"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 4v16m-4-4 4 4 4-4M17 20V4m-4 4 4-4 4 4"/></svg></button><select hidden id="setSort" aria-label="ローカルの並び順"><option value="title:asc">名前 · 昇順</option><option value="title:desc">名前 · 降順</option><option value="createdAt:desc">作成日時 · 新しい順</option>
 <option value="createdAt:asc">作成日時 · 古い順</option>
 <option value="lastStudiedAt:desc">最終学習日時 · 新しい順</option>
 <option value="lastStudiedAt:asc">最終学習日時 · 古い順</option>
 <option value="updatedAt:desc">最終変更日時 · 新しい順</option>
 <option value="updatedAt:asc">最終変更日時 · 古い順</option>
-</select></label><div id="setGrid" class="set-grid"></div></details>
-<details id="webSection" class="sidebar-section" open><summary>ウェブ</summary><label class="sort-label">並び順<select id="webSort" aria-label="ウェブの並び順"><option value="title:asc">名前 · 昇順</option><option value="title:desc">名前 · 降順</option><option value="createdAt:desc">作成日時 · 新しい順</option>
+</select><div id="setGrid" class="set-grid"></div></details>
+<details id="webSection" class="sidebar-section" open><summary>ウェブ</summary><button type="button" class="sort-toggle icon-btn" data-sort="webSort" aria-label="ウェブの並び順を選ぶ" aria-haspopup="dialog"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 4v16m-4-4 4 4 4-4M17 20V4m-4 4 4-4 4 4"/></svg></button><select hidden id="webSort" aria-label="ウェブの並び順"><option value="title:asc">名前 · 昇順</option><option value="title:desc">名前 · 降順</option><option value="createdAt:desc">作成日時 · 新しい順</option>
 <option value="createdAt:asc">作成日時 · 古い順</option>
 <option value="lastStudiedAt:desc">最終学習日時 · 新しい順</option>
 <option value="lastStudiedAt:asc">最終学習日時 · 古い順</option>
 <option value="updatedAt:desc">最終変更日時 · 新しい順</option>
 <option value="updatedAt:asc">最終変更日時 · 古い順</option>
-</select></label><button id="addSource" class="wide">＋ URLを登録</button><div id="sources" class="stack" aria-live="polite"></div></details>
+</select><button id="addSource" class="wide">＋ URLを登録</button><div id="sources" class="stack" aria-live="polite"></div></details>
 </aside></div>
 <button id="sidebarBackdrop" class="sidebar-backdrop" aria-label="サイドバーを閉じる" tabindex="-1" aria-hidden="true"></button>
 <div class="right-pane">
@@ -307,7 +331,10 @@ dialog{border-radius:14px}.result{background:var(--soft)}
 <hr class="dialog-divider"><h2>データ管理</h2>
 <div class="actions"><button id="reset">学習履歴を初期化</button><button id="clear" class="danger">すべて削除</button></div>
 </div></dialog>
-<dialog id="sourceDialog"><form id="sourceForm" class="form"><h2>ネットの教材を登録</h2><label>セクション名<input id="sourceName" required></label><label>JSONのURL<input id="sourceUrl" type="url" required placeholder="https://example.com/sets.json"></label><p class="muted small">公開JSONを指定してください。配信元でCORSの許可が必要です。</p><p id="sourceMessage" role="status"></p><div class="actions"><button type="button" data-close-dialog="sourceDialog">閉じる</button><button id="sourceSubmit" class="primary">登録して同期</button></div></form></dialog><dialog id="setDialog"><form id="setForm" class="form"><h2 id="setFormTitle">学習セット</h2><label>名前<input id="sTitle" required></label><label>説明<textarea id="sDesc" rows="3"></textarea></label><div class="actions"><button type="button" id="cancelSet">キャンセル</button><button class="primary">保存</button></div></form></dialog><dialog id="itemDialog"><form id="itemForm" class="form"><h2>カードの編集</h2><label>種類<select id="iType"><option value="word">単語・用語</option><option value="grammar">構文・概念</option></select></label><label>表面<input id="iTerm" required></label><label>裏面<input id="iMeaning" required></label><label>解説<textarea id="iExplanation"></textarea></label><label>例・参考情報<textarea id="iExample"></textarea></label><label>例の解説<textarea id="iTranslation"></textarea></label><label>クイズの問題<input id="iQuestion" required></label><label>選択肢（4行）<textarea id="iOptions" required></textarea></label><label>正解<select id="iAnswer"><option value="0">1番</option><option value="1">2番</option><option value="2">3番</option><option value="3">4番</option></select></label><div class="actions"><button type="button" id="cancelItem">キャンセル</button><button class="primary">保存</button></div></form></dialog><script>
+<dialog id="sourceDialog"><form id="sourceForm" class="form"><h2>ネットの教材を登録</h2><label>セクション名<input id="sourceName" required></label><label>JSONのURL<input id="sourceUrl" type="url" required placeholder="https://example.com/sets.json"></label><p class="muted small">公開JSONを指定してください。配信元でCORSの許可が必要です。</p><p id="sourceMessage" role="status"></p><div class="actions"><button type="button" data-close-dialog="sourceDialog">閉じる</button><button id="sourceSubmit" class="primary">登録して同期</button></div></form></dialog><dialog id="setDialog"><form id="setForm" class="form"><h2 id="setFormTitle">学習セット</h2><label>名前<input id="sTitle" required></label><label>説明<textarea id="sDesc" rows="3"></textarea></label><div class="actions"><button type="button" id="cancelSet">キャンセル</button><button class="primary">保存</button></div></form></dialog><dialog id="itemDialog"><form id="itemForm" class="form"><h2>カードの編集</h2><p id="itemMessage" class="danger" role="alert" hidden></p><label>種類<select id="iType"><option value="word">単語・用語</option><option value="grammar">構文・概念</option></select></label><label>表面<input id="iTerm" required></label><label>裏面<input id="iMeaning" required></label><label>解説<textarea id="iExplanation"></textarea></label><label>例・参考情報<textarea id="iExample"></textarea></label><label>例の解説<textarea id="iTranslation"></textarea></label><label>クイズの問題<input id="iQuestion" required></label><label>選択肢（4行）<textarea id="iOptions" required></textarea></label><label>正解<select id="iAnswer"><option value="0">1番</option><option value="1">2番</option><option value="2">3番</option><option value="3">4番</option></select></label><div class="actions"><button type="button" id="cancelItem">キャンセル</button><button class="primary">保存</button></div></form></dialog><dialog id="confirmDialog" aria-labelledby="confirmTitle" aria-describedby="confirmMessage"><div class="dialog-layout"><div class="dialog-head"><h2 id="confirmTitle">確認</h2></div><div class="dialog-body"><p id="confirmMessage" class="detail"></p></div><div class="dialog-footer actions"><button id="confirmCancel" type="button" autofocus>キャンセル</button><button id="confirmAccept" type="button" class="primary">OK</button></div></div></dialog>
+<dialog id="sortDialog" aria-labelledby="sortTitle"><div class="dialog-layout"><div class="dialog-head"><h2 id="sortTitle">並び順</h2></div><div id="sortChoices" class="dialog-body sort-choices" role="group" aria-labelledby="sortTitle"></div><div class="dialog-footer actions"><button type="button" data-close-dialog="sortDialog">閉じる</button></div></div></dialog>
+<dialog id="explanationDialog" aria-labelledby="explanationTitle"><div class="dialog-layout"><div class="dialog-head"><h2 id="explanationTitle"></h2></div><div class="dialog-body"><p id="explanationMeaning" class="detail"></p><section id="explanationTextSection"><h3>解説</h3><p id="explanationText" class="detail"></p></section><section id="explanationExampleSection"><h3>例・参考情報</h3><p id="explanationExample" class="example"></p><p id="explanationTranslation" class="detail muted"></p></section><p id="explanationEmpty" class="muted" hidden>解説・例はまだありません。</p></div><div class="dialog-footer actions"><button type="button" data-close-dialog="explanationDialog">閉じる</button></div></div></dialog>
+<script>
 (()=>{
 "use strict";
 const $=id=>document.getElementById(id),KEY="kntt.reviewer.v2",OLD="kntt.english-review.v1",SORT_KEY="kntt.reviewer.set-sort",DAY=86400000;
@@ -421,7 +448,33 @@ setSort.onchange=()=>{
 };
 $("setGrid").onclick=e=>{let b=e.target.closest("[data-open]");if(b)open(b.dataset.open)};
 
-function renderList(){let s=selected();if(!s)return;const remote=!!s.sourceId;for(const id of ["editSet","deleteSet","newItem"])$(id).hidden=remote;$("setTitle").textContent=s.title;$("setDesc").textContent=s.description;let vals=[["カード",s.items.length],["苦手",s.items.filter(x=>weak(progress(s.id,x.id))).length]];$("stats").innerHTML=vals.map(a=>'<div><strong>'+a[1]+'</strong><span>'+a[0]+'</span></div>').join("");const q=$("search").value.trim().toLowerCase();const a=filter($("filter").value).filter(x=>[x.term,x.meaning,x.explanation].some(t=>t.toLowerCase().includes(q)));$("items").innerHTML=a.length?a.map(x=>'<article class="item"><div class="row"><span class="tag">'+(x.type==="grammar"?"構文・概念":"単語・用語")+'</span>'+(weak(progress(s.id,x.id))?'<span class="small muted">苦手</span>':'')+'</div><h3>'+esc(x.term)+'</h3><p>'+esc(x.meaning)+'</p><details><summary>解説・例</summary><p class="detail">'+esc(x.explanation)+'</p><p class="example">'+esc(x.example)+'\n'+esc(x.translation)+'</p></details><div class="actions" '+(s.sourceId?'hidden':'')+'><button data-edit="'+esc(x.id)+'">編集</button><button class="danger" data-remove="'+esc(x.id)+'">削除</button></div></article>').join(""):'<div class="panel muted">該当するカードはありません。</div>'}
+const actionIcons={
+ explanation:'<path d="M3 5h7a4 4 0 0 1 4 4v11a4 4 0 0 0-4-4H3zM14 9a4 4 0 0 1 4-4h3v11h-3a4 4 0 0 0-4 4"/>',
+ edit:'<path d="M12 20h9M16 4l4 4-11 11-4 1 1-4z"/>',
+ remove:'<path d="M4 7h16M10 11v7M14 11v7M6 7l1 14h10l1-14M9 7V4h6v3"/>'
+};
+function cardAction(action,id,label){
+ return '<button type="button" class="icon-btn'+(action==='remove'?' danger':'')+'" data-'+action+'="'+esc(id)+'" aria-label="'+esc(label)+'" title="'+esc(label)+'"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+actionIcons[action]+'</svg></button>';
+}
+function renderList(){
+ const s=selected();if(!s)return;
+ for(const id of ["editSet","deleteSet","newItem"])$(id).hidden=!!s.sourceId;
+ $("setTitle").textContent=s.title;$("setDesc").textContent=s.description;
+ const vals=[["カード",s.items.length],["苦手",s.items.filter(x=>weak(progress(s.id,x.id))).length]];
+ $("stats").innerHTML=vals.map(a=>'<div><strong>'+a[1]+'</strong><span>'+a[0]+'</span></div>').join("");
+ const q=$("search").value.trim().toLowerCase();
+ const cards=filter($("filter").value).filter(x=>[x.term,x.meaning,x.explanation].some(t=>t.toLowerCase().includes(q)));
+ $("items").innerHTML=cards.length?cards.map(x=>'<article class="item"><div class="item-copy"><span class="tag">'+(x.type==="grammar"?'構文・概念':'単語・用語')+(weak(progress(s.id,x.id))?' · 苦手':'')+'</span><h3>'+esc(x.term)+'</h3><p>'+esc(x.meaning)+'</p></div><div class="item-tools">'+cardAction('explanation',x.id,x.term+'の解説・例を見る')+(s.sourceId?'':cardAction('edit',x.id,x.term+'を編集')+cardAction('remove',x.id,x.term+'を削除'))+'</div></article>').join(''):'<div class="panel muted">該当するカードはありません。</div>';
+}
+function showExplanation(id){
+ const x=selected()?.items.find(x=>x.id===id);if(!x)return;
+ $("explanationTitle").textContent=x.term;$("explanationMeaning").textContent=x.meaning;
+ $("explanationText").textContent=x.explanation;$("explanationTextSection").hidden=!x.explanation;
+ $("explanationExample").textContent=x.example;$("explanationTranslation").textContent=x.translation;
+ $("explanationExampleSection").hidden=!x.example&&!x.translation;
+ $("explanationEmpty").hidden=!!(x.explanation||x.example||x.translation);
+ $("explanationDialog").showModal();$("explanationDialog").querySelector('.dialog-body').scrollTop=0;
+}
 $("search").oninput=renderList;$("filter").onchange=renderList;
 function session(){return (state.sessions||={})[active]||((state.sessions)[active]={})}
 function buildCards(reset=false){
@@ -511,17 +564,27 @@ function renderQuizFeedback(x,ok){
 $("startQuiz").onclick=startQuiz;
 $("quizScope").onchange=()=>{delete session().quiz;save();resetQuizView()};
 function showSet(id){editingSet=id||"";let s=state.sets.find(x=>x.id===id);$("sTitle").value=s?.title||"";$("sDesc").value=s?.description||"";$("setDialog").showModal()}
-$("deleteSet").onclick=()=>{const s=selected();if(!s||!confirm("学習セット「"+s.title+"」とその学習履歴を削除しますか？"))return;state.sets=state.sets.filter(v=>v.id!==s.id);for(const k of Object.keys(state.progress))if(k.startsWith(s.id+"/"))delete state.progress[k];active="";save();tab("sets")};$("newSet").onclick=()=>{$("createDialog").showModal();$("createTitle").focus()};
+$("deleteSet").onclick=async()=>{const s=selected();if(!s||!await askConfirmation("学習セット「"+s.title+"」とその学習履歴を削除しますか？"))return;state.sets=state.sets.filter(v=>v.id!==s.id);for(const k of Object.keys(state.progress))if(k.startsWith(s.id+"/"))delete state.progress[k];active="";save();tab("sets")};$("newSet").onclick=()=>{$("createDialog").showModal();$("createTitle").focus()};
 $("cancelCreate").onclick=()=>{$("createDialog").close()};
 $("createForm").onsubmit=e=>{e.preventDefault();const title=$("createTitle").value.trim(),description=$("createDesc").value;if(!title)return;const id=freshSetId();state.sets.push(newSet(id,title,description));save();$("createForm").reset();$("createDialog").close();open(id)};$("editSet").onclick=()=>showSet(active);$("cancelSet").onclick=()=>$("setDialog").close();$("setForm").onsubmit=e=>{e.preventDefault();let title=$("sTitle").value.trim();if(!title)return;if(editingSet){let s=state.sets.find(x=>x.id===editingSet);s.title=title;s.description=$("sDesc").value;s.updatedAt=Date.now()}else{const id=freshSetId();state.sets.push(newSet(id,title,$("sDesc").value));active=id}save();$("setDialog").close();renderSets();if(selected())renderList()};
-function showItem(id){editingItem=id||"";let x=selected()?.items.find(v=>v.id===id);for(const [field,value]of Object.entries({Type:x?.type||"word",Term:x?.term||"",Meaning:x?.meaning||"",Explanation:x?.explanation||"",Example:x?.example||"",Translation:x?.translation||"",Question:x?.question||"",Options:x?.options.join("\n")||"",Answer:String(x?.answer||0)}))$("i"+field).value=value;$("itemDialog").showModal()}
-$("newItem").onclick=()=>showItem("");$("cancelItem").onclick=()=>$("itemDialog").close();$("itemForm").onsubmit=e=>{e.preventDefault();try{let x=item({id:editingItem||freshItemId(selected().items),type:$("iType").value,term:$("iTerm").value,meaning:$("iMeaning").value,explanation:$("iExplanation").value,example:$("iExample").value,translation:$("iTranslation").value,question:$("iQuestion").value,options:$("iOptions").value.trim().split("\n"),answer:$("iAnswer").value});let s=selected();s.items=s.items.filter(a=>a.id!==editingItem);s.items.push(x);s.updatedAt=Date.now();save();$("itemDialog").close();renderList()}catch(e){alert(e.message)}};
-$("items").onclick=e=>{let b=e.target.closest("button");if(!b)return;if(b.dataset.edit)showItem(b.dataset.edit);if(b.dataset.remove&&confirm("このカードと履歴を削除しますか？")){const s=selected();s.items=s.items.filter(x=>x.id!==b.dataset.remove);s.updatedAt=Date.now();delete state.progress[pkey(active,b.dataset.remove)];save();renderList()}};
+function showItem(id){$("itemMessage").hidden=true;editingItem=id||"";let x=selected()?.items.find(v=>v.id===id);for(const [field,value]of Object.entries({Type:x?.type||"word",Term:x?.term||"",Meaning:x?.meaning||"",Explanation:x?.explanation||"",Example:x?.example||"",Translation:x?.translation||"",Question:x?.question||"",Options:x?.options.join("\n")||"",Answer:String(x?.answer||0)}))$("i"+field).value=value;$("itemDialog").showModal()}
+$("newItem").onclick=()=>showItem("");$("cancelItem").onclick=()=>$("itemDialog").close();$("itemForm").onsubmit=e=>{e.preventDefault();try{let x=item({id:editingItem||freshItemId(selected().items),type:$("iType").value,term:$("iTerm").value,meaning:$("iMeaning").value,explanation:$("iExplanation").value,example:$("iExample").value,translation:$("iTranslation").value,question:$("iQuestion").value,options:$("iOptions").value.trim().split("\n"),answer:$("iAnswer").value});let s=selected();s.items=s.items.filter(a=>a.id!==editingItem);s.items.push(x);s.updatedAt=Date.now();save();$("itemDialog").close();renderList()}catch(e){$("itemMessage").textContent=e.message;$("itemMessage").hidden=false;$("itemMessage").scrollIntoView({block:"nearest"})}};
+$("items").onclick=async e=>{
+ const b=e.target.closest('button');if(!b)return;
+ if(b.dataset.explanation){showExplanation(b.dataset.explanation);return}
+ const s=selected();if(!s||s.sourceId)return;
+ if(b.dataset.edit)showItem(b.dataset.edit);
+ if(b.dataset.remove&&await askConfirmation('このカードと履歴を削除しますか？')){
+ s.items=s.items.filter(x=>x.id!==b.dataset.remove);s.updatedAt=Date.now();
+ delete state.progress[pkey(s.id,b.dataset.remove)];save();renderList();renderSets();
+ }
+};
 const sample={sets:[{title:"理科の復習",description:"用語と基本概念の学習",items:[{type:"word",term:"浸透",meaning:"半透膜を介した水の移動",explanation:"水の化学ポテンシャル差により起こる。",example:"細胞と低張液",translation:"細胞内へ水が入りやすい。",question:"浸透の説明は？",options:["半透膜を通る水の移動","固体の昇華","熱だけの移動","気体の凝縮"],answer:0}]}]};
 $("example").onclick=()=>$("jsonInput").value=JSON.stringify(sample,null,2);
-function importData(raw){
+async function importData(raw){
  const inputs=Array.isArray(raw.sets)?raw.sets:Array.isArray(raw.items)?[{title:"英文和訳の復習",description:"旧形式の教材",items:raw.items}]:Array.isArray(raw)?[{title:"取り込み教材",description:"旧形式の教材",items:raw}]:null;
  if(!inputs)throw Error("setsかitems配列が必要です");
+ const includeHistory=raw&&raw.progress&&typeof raw.progress==='object'&&!Array.isArray(raw.progress)&&await askConfirmation('バックアップ内の学習履歴も取り込みますか？',{accept:'取り込む',cancel:'教材のみ',title:'バックアップの取り込み'});
  const next=JSON.parse(JSON.stringify(state)),incoming=[];
  for(const source of inputs){
   if(!source||!Array.isArray(source.items))throw Error("各セットにitems配列が必要です");
@@ -541,7 +604,7 @@ function importData(raw){
   next.sets.push(loaded);
   incoming.push({source,loaded});
  }
- if(raw&&raw.progress&&typeof raw.progress==="object"&&!Array.isArray(raw.progress)&&confirm("バックアップ内の学習履歴も取り込みますか？")){
+ if(includeHistory){
   for(const {source,loaded} of incoming){
    if(!idOK(source.id))continue;
    source.items.forEach((original,i)=>{
@@ -557,12 +620,12 @@ function importData(raw){
  }
  state=next;save();renderSets();return incoming.length;
 }
-function doImport(t){try{$("message").textContent=importData(JSON.parse(t))+"セットを取り込みました"}catch(e){$("message").textContent="エラー: "+e.message}}
+async function doImport(t){try{$("message").textContent=await importData(JSON.parse(t))+"セットを取り込みました"}catch(e){$("message").textContent="エラー: "+e.message}}
 $("importJson").onclick=()=>doImport($("jsonInput").value);$("file").onchange=async e=>{if(e.target.files[0])doImport(await e.target.files[0].text());e.target.value=""};
 function download(name,data){let url=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:"application/json"})),a=document.createElement("a");a.href=url;a.download=name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000)}
 $("export").onclick=()=>download("reviewer-sets.json",{sets:state.sets.map(s=>({title:s.title,description:s.description,items:s.items.map(({id,...fields})=>fields)}))});$("backup").onclick=()=>download("reviewer-backup.json",state);
-$("reset").onclick=()=>{if(confirm("学習履歴を初期化しますか？")){state.progress={};state.sessions={};state.view=null;for(const s of state.sets)s.lastStudiedAt=null;save();renderSets();if(selected())renderList()}};
-$("clear").onclick=()=>{if(confirm("すべてのセットと履歴を削除しますか？")){state={sets:[],progress:{}};active="";save();tab("sets")}};
+$("reset").onclick=async()=>{if(await askConfirmation("学習履歴を初期化しますか？")){state.progress={};state.sessions={};state.view=null;for(const s of state.sets)s.lastStudiedAt=null;save();renderSets();if(selected())renderList()}};
+$("clear").onclick=async()=>{if(await askConfirmation("すべてのセットと履歴を削除しますか？")){state={sets:[],progress:{}};active="";save();tab("sets")}};
 const promptFormat=[
 "以下の要望に沿ってReviewerアプリに取り込める学習セットのJSONを作成してください。",
 "出力するJSONは、開始行を```json、終了行を```とするコードブロックで囲んでください。コードブロック内は厳密なJSONのみとし、コードブロックの前後に説明文を付けないでください。",
@@ -573,6 +636,58 @@ const promptFormat=[
 ].join("\n");
 $("copyPrompt").onclick=async()=>{let t=$("topic").value.trim();if(!t){$("copyStatus").textContent="学習セットの内容を入力してください";return}try{const p="学習内容の要望:\n"+t+"\n\n"+promptFormat;if(navigator.clipboard&&window.isSecureContext)await navigator.clipboard.writeText(p);else{let temp=document.createElement("textarea");temp.value=p;document.body.append(temp);temp.select();if(!document.execCommand("copy"))throw Error("copy");temp.remove()}$("copyStatus").textContent="コピーしました"}catch(e){$("copyStatus").textContent="コピーに失敗しました"}};
 
+function prepareDialogs(){
+ for(const dialog of document.querySelectorAll('dialog')){
+ if(dialog.querySelector('.dialog-layout'))continue;
+ const root=dialog.firstElementChild;
+ const children=[...root.children],first=children.shift();
+ const head=document.createElement('div');head.className='dialog-head';head.append(first);
+ let footer=children.at(-1)?.classList.contains('actions')&&dialog.id!=='exportDialog'?children.pop():null;
+ if(dialog.id==='importDialog'){
+ footer=document.createElement('div');footer.className='actions';footer.append($("importJson"));
+ }
+ if(!footer){footer=document.createElement('div');footer.className='actions'}
+ if(!footer.querySelector('[data-close-dialog],#cancelCreate,#cancelSet,#cancelItem')){
+ const close=document.createElement('button');close.type='button';close.textContent='閉じる';close.dataset.closeDialog=dialog.id;footer.prepend(close);
+ }
+ footer.classList.add('dialog-footer');
+ const body=document.createElement('div');body.className='dialog-body';
+ for(const child of children)if(child!==$("importJson"))body.append(child);
+ root.className='dialog-layout';root.replaceChildren(head,body,footer);
+ const heading=head.querySelector('h2');if(heading){heading.id||=dialog.id+'Title';dialog.setAttribute('aria-labelledby',heading.id)}
+ }
+}
+prepareDialogs();
+if(window.visualViewport){
+ const resizeDialogs=()=>{document.documentElement.style.setProperty('--visual-height',visualViewport.height+'px');document.documentElement.style.setProperty('--dialog-top',(visualViewport.offsetTop+visualViewport.height/2)+'px')};
+ visualViewport.addEventListener('resize',resizeDialogs);visualViewport.addEventListener('scroll',resizeDialogs);resizeDialogs();
+}
+function askConfirmation(message,{title='確認',accept='OK',cancel='キャンセル'}={}){
+ const dialog=$("confirmDialog");if(dialog.open)return Promise.resolve(false);
+ $("confirmTitle").textContent=title;$("confirmMessage").textContent=message;
+ $("confirmAccept").textContent=accept;$("confirmCancel").textContent=cancel;
+ dialog.returnValue='';dialog.showModal();
+ return new Promise(resolve=>dialog.addEventListener('close',()=>resolve(dialog.returnValue==='accept'),{once:true}));
+}
+$("confirmAccept").onclick=()=>$("confirmDialog").close('accept');
+$("confirmCancel").onclick=()=>$("confirmDialog").close('cancel');
+let sortTarget='';
+function updateSortButtons(){
+ document.querySelectorAll('[data-sort]').forEach(b=>{
+ const select=$(b.dataset.sort);b.title='並び順: '+select.selectedOptions[0].textContent;
+ });
+}
+document.querySelectorAll('[data-sort]').forEach(b=>b.onclick=()=>{
+ sortTarget=b.dataset.sort;const select=$(sortTarget);
+ $("sortTitle").textContent=(sortTarget==='setSort'?'ローカル':'ウェブ')+'の並び順';
+ $("sortChoices").innerHTML=Array.from(select.options).map(o=>'<button type="button" data-sort-value="'+esc(o.value)+'" aria-pressed="'+(o.selected?'true':'false')+'"><span>'+esc(o.textContent)+'</span><span aria-hidden="true">'+(o.selected?'✓':'')+'</span></button>').join('');
+ $("sortDialog").showModal();$("sortChoices").querySelector('[aria-pressed="true"]')?.focus();
+});
+$("sortChoices").onclick=e=>{
+ const b=e.target.closest('[data-sort-value]');if(!b)return;
+ const select=$(sortTarget);select.value=b.dataset.sortValue;select.dispatchEvent(new Event('change'));
+ updateSortButtons();$("sortDialog").close();
+};
 $("showImport").onclick=()=>{$("importDialog").showModal();$("jsonInput").focus()};
 $("showExport").onclick=()=>{$("exportDialog").showModal()};
 document.querySelectorAll("[data-close-dialog]").forEach(b=>b.onclick=()=>$(b.dataset.closeDialog).close());
@@ -702,21 +817,21 @@ $("sourceForm").onsubmit=async e=>{
  (state.sources||= []).push(source);save();$("sourceDialog").close();$("sourceForm").reset();await syncSource(source);
  }catch(e){$("sourceMessage").textContent=e.message}
 };
-$("sources").onclick=e=>{
+$("sources").onclick=async e=>{
  const summary=e.target.closest('[data-source-section] > summary');
  if(summary){e.preventDefault();const section=summary.parentElement;section.open=!section.open;rememberSourceSection(section);return}
  const b=e.target.closest('button');if(!b)return;
  if(b.dataset.open){open(b.dataset.open);return}
  const id=b.dataset.sync||b.dataset.unsubscribe||b.dataset.copy,source=state.sources.find(s=>s.id===id);if(!source)return;
  if(b.dataset.sync)syncSource(source);
- if(b.dataset.copy){importData({sets:state.sets.filter(s=>s.sourceId===id)});return}
- if(b.dataset.unsubscribe&&!syncing.has(id)&&confirm('この配信元と教材・学習履歴を削除しますか？')){
+ if(b.dataset.copy){await importData({sets:state.sets.filter(s=>s.sourceId===id)});return}
+ if(b.dataset.unsubscribe&&!syncing.has(id)&&await askConfirmation('この配信元と教材・学習履歴を削除しますか？')){
  const ids=state.sets.filter(s=>s.sourceId===id).map(s=>s.id);
  state.sets=state.sets.filter(s=>s.sourceId!==id);state.sources=state.sources.filter(s=>s.id!==id);
  for(const k of Object.keys(state.progress))if(ids.some(id=>k.startsWith(id+'/')))delete state.progress[k];save();renderSets();
  }
 };
-load();renderSets();
+updateSortButtons();load();renderSets();
 if(state.view&&state.sets.some(s=>s.id===state.view.setId)&&['list','cards','quiz'].includes(state.view.screen)){
  active=state.view.setId;tab(state.view.screen);
 }
