@@ -1,3 +1,4 @@
+const {createPage}=require('./browser-storage.cjs');
 const {chromium}=require('playwright');
 const fs=require('node:fs');
 const assert=require('node:assert/strict');
@@ -5,12 +6,12 @@ const assert=require('node:assert/strict');
 const browser=await chromium.launch({executablePath:process.env.CHROMIUM_PATH||'/usr/bin/chromium',headless:true,args:['--no-sandbox']});
 try{
 for(const viewport of [{width:1440,height:1000},{width:820,height:1180},{width:390,height:844}]){
- const page=await browser.newPage({viewport,reducedMotion:'reduce',hasTouch:true});
+ const page=await createPage(browser,{viewport,reducedMotion:'reduce',hasTouch:true});
  const errors=[];page.on('pageerror',e=>errors.push(e.message));
  await page.route('https://reviewer.test/**',r=>r.fulfill({contentType:'text/html',body:fs.readFileSync(new URL('../dist/reviewer.html',`file://${__filename}`),'utf8')}));
  await page.goto('https://reviewer.test/reviewer.html');
  assert.equal(await page.locator('.github-link').getAttribute('href'),'https://github.com/kntt32/reviewer');
- await page.evaluate(()=>{
+ await page.evaluate(async()=>{
  const card=i=>({id:'c'+i,term:'term'+i,meaning:'meaning'+i,options:['a','b','c','d'],answer:0});
  localStorage.setItem('kntt.reviewer.v2',JSON.stringify({sets:[{id:'b',title:'Beta',items:[card(0),card(1)]},{id:'a',title:'Alpha',items:[card(0),card(1)]},{id:'r2',sourceId:'feed',remoteKey:'r2',title:'Another Web set',items:[card(0)]},{id:'r',sourceId:'feed',remoteKey:'r',title:'Web set',items:[card(0)]}],sources:[{id:'feed',name:'英語の復習',url:'https://feed.test/data.json',cardIds:{}}],progress:{}}));
  });
@@ -32,8 +33,8 @@ for(const viewport of [{width:1440,height:1000},{width:820,height:1180},{width:3
  await page.locator('#openQuiz').click();await page.locator('#startQuiz').click();
  if(viewport.width===820)await page.screenshot({path:'/workspace/work/sidebar-ipad-quiz.png'});
  const pane=await page.locator('.right-pane').boundingBox(),quiz=await page.locator('#quiz').boundingBox();assert.ok(quiz.width>pane.width*.75);assert.ok(quiz.height>pane.height*.75);
- const overflow=await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth);assert.equal(overflow,false);
- assert.equal(await page.locator('.choice').first().evaluate(el=>getComputedStyle(el).touchAction),'manipulation');
+ const overflow=await page.evaluate(async()=>document.documentElement.scrollWidth>innerWidth);assert.equal(overflow,false);
+ assert.equal(await page.locator('.choice').first().evaluate(async el=>getComputedStyle(el).touchAction),'manipulation');
  const choice=await page.locator('.choice').first().boundingBox();assert.ok(choice.y+choice.height<=viewport.height);
  await page.locator('#quiz [data-detail-back]').click();
  if(mobile)await page.locator('#toggleSidebar').click();
@@ -57,7 +58,7 @@ for(const viewport of [{width:1440,height:1000},{width:820,height:1180},{width:3
  await page.close();
 }
 for(const width of [1280,390]){
- const page=await browser.newPage({viewport:{width,height:900},reducedMotion:'no-preference'});
+ const page=await createPage(browser,{viewport:{width,height:900},reducedMotion:'no-preference'});
  await page.route('https://reviewer.test/**',r=>r.fulfill({contentType:'text/html',body:fs.readFileSync(new URL('../dist/reviewer.html',`file://${__filename}`),'utf8')}));
  await page.goto('https://reviewer.test/reviewer.html');
  await page.locator('#toggleSidebar').click();

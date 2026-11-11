@@ -311,6 +311,16 @@ dialog[open]{display:flex;flex-direction:column}
 .dashboard-footer .github-link{margin:0;font-size:.72rem}.dashboard-footer>span{font-size:.7rem}
 @media(max-width:1100px){.dashboard-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:500px){#sets.active.dashboard{gap:24px;padding-top:8px}.dashboard-heading{gap:14px}.dashboard-metrics{gap:8px}.dashboard-metric{padding:14px;gap:8px}.dashboard-weak-card{gap:10px}.dashboard-footer{gap:12px;padding-bottom:12px}}
+
+.card-image{display:block;max-width:100%;height:auto;object-fit:contain;border-radius:8px;margin:10px auto}
+.card-thumbnails{display:flex;flex-wrap:wrap;gap:8px}.card-thumbnails .card-image{max-height:100px;max-width:min(180px,100%);margin:0}
+.flash .card-image{max-height:min(38dvh,360px)}
+#explanationImages{display:grid;gap:10px}#explanationImages:empty{display:none}
+.image-editor{display:grid;gap:8px}.image-editor input{max-width:100%;font-size:.8rem}
+.image-preview{display:flex;gap:8px;align-items:flex-start}.image-preview img{max-width:calc(100% - 40px);max-height:180px;object-fit:contain;border-radius:8px}
+.image-preview button{flex-shrink:0;min-height:32px;min-width:32px}
+#storageStatus{position:fixed;bottom:12px;left:50%;translate:-50% 0;z-index:100;max-width:calc(100vw - 24px);display:flex;align-items:center;gap:8px;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:var(--panel);font-size:.8rem;box-shadow:0 4px 20px #0002}
+#storageStatus button{min-height:32px;padding:5px 8px;font-size:.75rem;white-space:nowrap}
 </style></head><body>
 <div class="app-shell">
 <div class="sidebar-rail"><aside id="sidebar" aria-label="学習セットのサイドバー">
@@ -402,13 +412,14 @@ dialog[open]{display:flex;flex-direction:column}
 <hr class="dialog-divider"><h2>データ管理</h2>
 <div class="actions"><button id="reset">学習履歴を初期化</button><button id="clear" class="danger">すべて削除</button></div>
 </div></dialog>
-<dialog id="sourceDialog"><form id="sourceForm" class="form"><h2>ネットの教材を登録</h2><label>セクション名<input id="sourceName" required></label><label>JSONのURL<input id="sourceUrl" type="url" required placeholder="https://example.com/sets.json"></label><p class="muted small">公開JSONを指定してください。配信元でCORSの許可が必要です。</p><p id="sourceMessage" role="status"></p><div class="actions"><button type="button" data-close-dialog="sourceDialog">閉じる</button><button id="sourceSubmit" class="primary">登録して同期</button></div></form></dialog><dialog id="setDialog"><form id="setForm" class="form"><h2 id="setFormTitle">学習セット</h2><label>名前<input id="sTitle" required></label><label>説明<textarea id="sDesc" rows="3"></textarea></label><div class="actions"><button type="button" id="cancelSet">キャンセル</button><button class="primary">保存</button></div></form></dialog><dialog id="itemDialog"><form id="itemForm" class="form"><h2>カードの編集</h2><p id="itemMessage" class="danger" role="alert" hidden></p><label>表面<input id="iTerm" required></label><label>裏面<input id="iMeaning" required></label><label>解説<textarea id="iExplanation"></textarea></label><label>例・参考情報<textarea id="iExample"></textarea></label><label>例の解説<textarea id="iTranslation"></textarea></label><label>クイズの問題<input id="iQuestion" required></label><label>選択肢（4行）<textarea id="iOptions" required></textarea></label><label>正解<select id="iAnswer"><option value="0">1番</option><option value="1">2番</option><option value="2">3番</option><option value="3">4番</option></select></label><div class="actions"><button type="button" id="cancelItem">キャンセル</button><button class="primary">保存</button></div></form></dialog><dialog id="confirmDialog" aria-labelledby="confirmTitle" aria-describedby="confirmMessage"><div class="dialog-layout"><div class="dialog-head"><h2 id="confirmTitle">確認</h2></div><div class="dialog-body"><p id="confirmMessage" class="detail"></p></div><div class="dialog-footer actions"><button id="confirmCancel" type="button" autofocus>キャンセル</button><button id="confirmAccept" type="button" class="primary">OK</button></div></div></dialog>
+<dialog id="sourceDialog"><form id="sourceForm" class="form"><h2>ネットの教材を登録</h2><label>セクション名<input id="sourceName" required></label><label>JSONのURL<input id="sourceUrl" type="url" required placeholder="https://example.com/sets.json"></label><p class="muted small">公開JSONを指定してください。配信元でCORSの許可が必要です。</p><p id="sourceMessage" role="status"></p><div class="actions"><button type="button" data-close-dialog="sourceDialog">閉じる</button><button id="sourceSubmit" class="primary">登録して同期</button></div></form></dialog><dialog id="setDialog"><form id="setForm" class="form"><h2 id="setFormTitle">学習セット</h2><label>名前<input id="sTitle" required></label><label>説明<textarea id="sDesc" rows="3"></textarea></label><div class="actions"><button type="button" id="cancelSet">キャンセル</button><button class="primary">保存</button></div></form></dialog><dialog id="itemDialog"><form id="itemForm" class="form"><h2>カードの編集</h2><p id="itemMessage" class="danger" role="alert" hidden></p><label>表面<input id="iTerm" required></label><div class="image-editor"><label>表面の画像<input id="iImage" type="file" accept="image/png,image/jpeg,image/webp,image/gif,image/avif"></label><div class="image-preview" hidden><img id="iImagePreview" alt="表面の画像"><button type="button" data-remove-image="image" class="icon-btn" aria-label="表面の画像を削除"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M4 7h16M10 11v7M14 11v7M6 7l1 14h10l1-14M9 7V4h6v3"/></svg></button></div></div><label>裏面<input id="iMeaning" required></label><div class="image-editor"><label>裏面の画像<input id="iAnswerImage" type="file" accept="image/png,image/jpeg,image/webp,image/gif,image/avif"></label><div class="image-preview" hidden><img id="iAnswerImagePreview" alt="裏面の画像"><button type="button" data-remove-image="answerImage" class="icon-btn" aria-label="裏面の画像を削除"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M4 7h16M10 11v7M14 11v7M6 7l1 14h10l1-14M9 7V4h6v3"/></svg></button></div></div><label>解説<textarea id="iExplanation"></textarea></label><label>例・参考情報<textarea id="iExample"></textarea></label><label>例の解説<textarea id="iTranslation"></textarea></label><label>クイズの問題<input id="iQuestion" required></label><label>選択肢（4行）<textarea id="iOptions" required></textarea></label><label>正解<select id="iAnswer"><option value="0">1番</option><option value="1">2番</option><option value="2">3番</option><option value="3">4番</option></select></label><div class="actions"><button type="button" id="cancelItem">キャンセル</button><button class="primary">保存</button></div></form></dialog><dialog id="confirmDialog" aria-labelledby="confirmTitle" aria-describedby="confirmMessage"><div class="dialog-layout"><div class="dialog-head"><h2 id="confirmTitle">確認</h2></div><div class="dialog-body"><p id="confirmMessage" class="detail"></p></div><div class="dialog-footer actions"><button id="confirmCancel" type="button" autofocus>キャンセル</button><button id="confirmAccept" type="button" class="primary">OK</button></div></div></dialog>
 <div id="sortPopover" popover="auto" class="floating-menu" aria-labelledby="sortTitle"><h2 id="sortTitle" class="menu-heading">並び順</h2><div id="sortChoices" class="sort-choices" role="menu" aria-labelledby="sortTitle"></div></div>
-<dialog id="explanationDialog" aria-labelledby="explanationTitle"><div class="dialog-layout"><div class="dialog-head"><h2 id="explanationTitle"></h2></div><div class="dialog-body"><p id="explanationMeaning" class="detail"></p><section id="explanationTextSection"><h3>解説</h3><p id="explanationText" class="detail"></p></section><section id="explanationExampleSection"><h3>例・参考情報</h3><p id="explanationExample" class="example"></p><p id="explanationTranslation" class="detail muted"></p></section><p id="explanationEmpty" class="muted" hidden>解説・例はまだありません。</p></div><div class="dialog-footer actions"><button type="button" data-close-dialog="explanationDialog">閉じる</button></div></div></dialog>
+<dialog id="explanationDialog" aria-labelledby="explanationTitle"><div class="dialog-layout"><div class="dialog-head"><h2 id="explanationTitle"></h2></div><div class="dialog-body"><p id="explanationMeaning" class="detail"></p><div id="explanationImages"></div><section id="explanationTextSection"><h3>解説</h3><p id="explanationText" class="detail"></p></section><section id="explanationExampleSection"><h3>例・参考情報</h3><p id="explanationExample" class="example"></p><p id="explanationTranslation" class="detail muted"></p></section><p id="explanationEmpty" class="muted" hidden>解説・例はまだありません。</p></div><div class="dialog-footer actions"><button type="button" data-close-dialog="explanationDialog">閉じる</button></div></div></dialog>
 <div id="setActionsPopover" popover="auto" class="floating-menu" aria-labelledby="setActionsTitle"><h2 id="setActionsTitle" class="menu-heading"></h2><p id="setActionsHint" class="muted small" hidden>名前変更と削除はこの端末内に適用します。</p><div class="set-menu-actions" role="menu" aria-labelledby="setActionsTitle"><button type="button" id="renameSetAction" role="menuitem">名前変更</button><button type="button" id="exportSetAction" role="menuitem">このセットをエクスポート</button><button type="button" id="deleteSetAction" class="danger" role="menuitem">削除</button></div></div>
 <dialog id="renameDialog" aria-labelledby="renameTitle"><form id="renameForm" class="dialog-layout"><div class="dialog-head"><h2 id="renameTitle">名前変更</h2></div><div class="dialog-body"><label>名前<input id="renameInput" required maxlength="200"></label></div><div class="dialog-footer actions"><button type="button" data-close-dialog="renameDialog">キャンセル</button><button type="submit" class="primary">保存</button></div></form></dialog>
+<div id="storageStatus" role="alert" hidden><span id="storageMessage"></span><button type="button" id="storageRetry">再試行</button><button type="button" id="storageBackup">バックアップ</button></div>
 <script>
-(()=>{
+(async()=>{
 "use strict";
 const $=id=>document.getElementById(id),KEY="kntt.reviewer.v2",OLD="kntt.english-review.v1",SORT_KEY="kntt.reviewer.set-sort",DAY=86400000;
 const esc=x=>String(x??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -422,7 +433,27 @@ document.addEventListener('keydown',()=>{inputRoot.dataset.keyboard='true'},true
 let quizCurrent=null,quizOrder=[],quizAnswered=null;
 let state={sets:[],progress:{}},active="",editingSet="",editingItem="",deck=[],pos=0,reveal=false,queue=[],firstSeen=new Set(),wrongOnce=new Set(),firstRight=0,quizTotal=0;
 const idOK=x=>typeof x==="string"&&/^[A-Za-z0-9._-]{1,100}$/.test(x);
-function item(x){if(!x||!idOK(x.id)||!String(x.term||"").trim()||!String(x.meaning||"").trim())throw Error("カードのid/term/meaningが不正です");if(!Array.isArray(x.options)||x.options.length!==4||!x.options.every(a=>typeof a==="string"&&a.trim()))throw Error("optionsは4つの文字列です");if(!Number.isInteger(+x.answer)||+x.answer<0||+x.answer>3)throw Error("answerは0〜3です");return{id:x.id,type:x.type==="grammar"?"grammar":"word",term:String(x.term),meaning:String(x.meaning),explanation:String(x.explanation||""),example:String(x.example||""),translation:String(x.translation||""),question:String(x.question||x.term+"について正しい説明は？"),options:x.options.map(a=>a.trim()),answer:+x.answer}}
+const IMAGE_FIELDS=['image','answerImage'];
+function validateImage(value){
+ if(value==null||value==='')return '';
+ if(typeof value!=='string'||value.length>5600000)throw Error('画像が大きすぎます');
+ const match=/^data:image\/(png|jpeg|webp|gif|avif);base64,([A-Za-z0-9+/]+={0,2})$/i.exec(value);
+ if(!match||match[2].length%4)throw Error('画像はBase64のPNG・JPEG・WebP・GIF・AVIF形式にしてください');
+ const mime=match[1].toLowerCase(),head=atob(match[2].slice(0,256));
+ const valid=mime==='png'?head.startsWith('\x89PNG\r\n\x1a\n'):mime==='jpeg'?head.startsWith('\xff\xd8\xff'):mime==='webp'?head.startsWith('RIFF')&&head.slice(8,12)==='WEBP':mime==='gif'?/^GIF8[79]a/.test(head):head.slice(4,8)==='ftyp'&&/avif|avis/.test(head);
+ if(!valid)throw Error('画像データが不正です');
+ return 'data:image/'+mime+';base64,'+match[2];
+}
+function imageMarkup(src,alt,className='card-image'){
+ return src?'<img class="'+className+'" src="'+esc(src)+'" alt="'+esc(alt)+'" loading="lazy" decoding="async">':'';
+}
+function item(x){
+ if(!x||!idOK(x.id)||!String(x.term||'').trim()||!String(x.meaning||'').trim())throw Error('カードのid/term/meaningが不正です');
+ if(!Array.isArray(x.options)||x.options.length!==4||!x.options.every(a=>typeof a==='string'&&a.trim()))throw Error('optionsは4つの文字列です');
+ if(!Number.isInteger(+x.answer)||+x.answer<0||+x.answer>3)throw Error('answerは0〜3です');
+ const image=validateImage(x.image),answerImage=validateImage(x.answerImage);
+ return {id:x.id,type:x.type==='grammar'?'grammar':'word',term:String(x.term),meaning:String(x.meaning),explanation:String(x.explanation||''),example:String(x.example||''),translation:String(x.translation||''),question:String(x.question||x.term+'について正しい説明は？'),options:x.options.map(a=>a.trim()),answer:+x.answer,...(image?{image}:{}),...(answerImage?{answerImage}:{})};
+}
 const timestamp=value=>Number.isFinite(value)&&value>0?value:null;
 function set(x){if(!x||!idOK(x.id)||!String(x.title||"").trim()||!Array.isArray(x.items))throw Error("セットにはtitleとitemsが必要です");const a=x.items.map(item);if(new Set(a.map(v=>v.id)).size!==a.length)throw Error("同一セット内に重複IDがあります");return{id:x.id,title:String(x.title),description:String(x.description||""),items:a,
  createdAt:timestamp(x.createdAt),updatedAt:timestamp(x.updatedAt),lastStudiedAt:timestamp(x.lastStudiedAt)}}
@@ -450,10 +481,88 @@ function freshItemId(occupied=[]){
  do {id="card-"+crypto.randomUUID()} while(occupied.some(c=>c.id===id));
  return id;
 }
-function save(){try{localStorage.setItem(KEY,JSON.stringify(state))}catch(e){console.error("保存に失敗しました",e)}}
-function load(){
+let databasePromise=null,saveQueue=Promise.resolve(true),saveCount=0,storageReadFailed=false,lastAssetKeys=null;
+const assetCache=new Map();
+function openDatabase(){
+ if(databasePromise)return databasePromise;
+ databasePromise=new Promise((resolve,reject)=>{
+ const request=indexedDB.open('kntt.reviewer',1);
+ request.onupgradeneeded=()=>{const db=request.result;for(const name of ['state','images'])if(!db.objectStoreNames.contains(name))db.createObjectStore(name)};
+ request.onerror=()=>reject(request.error);
+ request.onsuccess=()=>{const db=request.result;db.onversionchange=()=>{db.close();databasePromise=null};db.onclose=()=>{databasePromise=null};resolve(db)};
+ }).catch(error=>{databasePromise=null;throw error});
+ return databasePromise;
+}
+async function readStoredState(){
+ const db=await openDatabase();
+ return new Promise((resolve,reject)=>{
+ const tx=db.transaction('state','readonly'),request=tx.objectStore('state').get(KEY);let value;
+ request.onsuccess=()=>{value=request.result};tx.oncomplete=()=>resolve(value);tx.onabort=()=>reject(tx.error||Error('読み込みに失敗しました'));
+ });
+}
+function blobDataURL(blob){return new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=()=>reject(reader.error);reader.readAsDataURL(blob)})}
+function imageBlob(src){
+ const [header,base64]=src.split(','),bytes=atob(base64),data=new Uint8Array(bytes.length);
+ for(let i=0;i<bytes.length;i++)data[i]=bytes.charCodeAt(i);
+ return new Blob([data],{type:header.slice(5,-7)});
+}
+async function hydrateState(stored){
+ const result=stored,ids=new Set();
+ for(const set of result.sets||[])for(const card of set.items||[])for(const field of IMAGE_FIELDS)if(card[field]&&typeof card[field]==='object')ids.add(card[field].asset);
+ const db=await openDatabase(),blobs=new Map();
+ if(ids.size)await new Promise((resolve,reject)=>{
+ const tx=db.transaction('images','readonly');
+ for(const id of ids){const request=tx.objectStore('images').get(id);request.onsuccess=()=>blobs.set(id,request.result)}
+ tx.oncomplete=resolve;tx.onabort=()=>reject(tx.error||Error('画像を読み込めません'));
+ });
+ const sources=new Map();
+ await Promise.all([...ids].map(async id=>{const blob=blobs.get(id);if(!(blob instanceof Blob))throw Error('保存画像が見つかりません');const src=validateImage(await blobDataURL(blob));sources.set(id,src);assetCache.set(src,{id,persisted:true,blob:null})}));
+ for(const set of result.sets||[])for(const card of set.items||[])for(const field of IMAGE_FIELDS)if(card[field]&&typeof card[field]==='object')card[field]=sources.get(card[field].asset);
+ return result;
+}
+function snapshotState(){
+ const {sets,...metadata}=state;
+ return {...structuredClone(metadata),sets:sets.map(set=>({...set,items:set.items.map(card=>({...card}))}))};
+}
+async function persistState(snapshot){
+ const db=await openDatabase(),assets=new Map(),existing=new Map(),used=new Set();
+ for(const set of snapshot.sets)for(const card of set.items)for(const field of IMAGE_FIELDS){
+ const src=card[field];if(!src)continue;
+ let asset=assetCache.get(src);
+ if(!asset){
+ const blob=imageBlob(src),digest=await crypto.subtle.digest('SHA-256',await blob.arrayBuffer());
+ const id=[...new Uint8Array(digest)].map(byte=>byte.toString(16).padStart(2,'0')).join('');
+ asset={id,blob,persisted:false};assetCache.set(src,asset);
+ }
+ if(!asset.persisted){asset.blob||=imageBlob(src);assets.set(asset.id,asset)}else existing.set(asset.id,src);
+ used.add(asset.id);card[field]={asset:asset.id};
+ }
+ const keys=[...used].sort().join(',');
+ await new Promise((resolve,reject)=>{
+ const tx=db.transaction(['state','images'],'readwrite'),images=tx.objectStore('images');
+ try{
+ for(const [id,asset]of assets)images.put(asset.blob,id);
+ for(const [id,src]of existing){const request=images.getKey(id);request.onsuccess=()=>{if(request.result===undefined)images.put(imageBlob(src),id)}}
+ tx.objectStore('state').put(snapshot,KEY);
+ if(keys!==lastAssetKeys){const request=images.getAllKeys();request.onsuccess=()=>{for(const id of request.result)if(!used.has(id))images.delete(id)}}
+ tx.oncomplete=resolve;tx.onabort=()=>reject(tx.error||Error('保存に失敗しました'));
+ }catch(error){tx.abort();reject(error)}
+ });
+ lastAssetKeys=keys;
+ for(const [src,asset]of assetCache){if(!used.has(asset.id))assetCache.delete(src);else{asset.persisted=true;asset.blob=null}}
+}
+function showStorageError(message){$("storageMessage").textContent=message;$("storageStatus").hidden=false;$("storageBackup").hidden=storageReadFailed}
+function save(){
+ if(storageReadFailed)return Promise.resolve(false);
+ const snapshot=snapshotState();saveCount++;document.body.dataset.saving='true';
+ saveQueue=saveQueue.then(()=>persistState(snapshot)).then(()=>{$("storageStatus").hidden=true;return true}).catch(error=>{showStorageError('保存に失敗しました');console.error('保存に失敗しました',error);return false}).finally(()=>{if(--saveCount===0)document.body.dataset.saving='false'});
+ return saveQueue;
+}
+async function load(){
 try{
- const d=JSON.parse(localStorage.getItem(KEY)||"null");
+ const stored=await readStoredState();
+ const legacyJSON=stored===undefined?localStorage.getItem(KEY):null;
+ const d=stored===undefined?(legacyJSON?JSON.parse(legacyJSON):null):await hydrateState(stored);
  if(d&&Array.isArray(d.sets)){
   state={sets:d.sets.map(x=>({...set(x),...(x.sourceId?{sourceId:x.sourceId,remoteKey:x.remoteKey}: {})})),progress:d.progress||{},sessions:d.sessions||{},view:d.view||null,sources:Array.isArray(d.sources)?d.sources:[]};
   for(const s of state.sets)restoreStudyDate(s,state.progress);
@@ -461,14 +570,15 @@ try{
   const seedIds=["so-that-result","depend-on","relative-which-object","could-hardly-have","not-until-inversion","misleading-v-mistaken","apparently","how-adj-s-v","though-participial","physician","intended-to","provided-that","take-seriously","how-arrived","what-believed","however-adj","by-comparison","themselves-emphasis","no-longer","whose-relative","otherwise","borne-by","very-emphasis","in-some-measure","had-past-perfect-inversion","would-have-provided","far-from-ing","would-have-found","few-visible-traces","questions-which","particular","only-in-part"];
   const legacy=state.sets.find(x=>x.id==="english-translation");
   const untouched=legacy&&legacy.items.length===seedIds.length&&legacy.items.every((v,i)=>v.id===seedIds[i])&&!Object.keys(state.progress).some(k=>k.startsWith("english-translation/"));
-  if(localStorage.getItem("kntt.reviewer.seed-cleanup.v1")!=="done"){
+  try{if(localStorage.getItem("kntt.reviewer.seed-cleanup.v1")!=="done"){
    if(untouched){state.sets=state.sets.filter(x=>x!==legacy);save();}
    localStorage.setItem("kntt.reviewer.seed-cleanup.v1","done");
-  }
+  }}catch{}
+  if(legacyJSON){if(!await save())throw Error('移行データを保存できません');localStorage.removeItem(KEY)}
   return;
  }
-}catch(e){console.warn("保存データを読み込めません",e);return}
-state={sets:[],progress:{}};save()
+}catch(e){storageReadFailed=true;showStorageError('保存データを読み込めません');console.warn('保存データを読み込めません',e);return}
+state={sets:[],progress:{}}
 }
 const selected=()=>state.sets.find(x=>x.id===active),pkey=(s,id)=>s+"/"+id,progress=(s,id)=>state.progress[pkey(s,id)]||{attempts:0,reps:0,correct:0,lapses:0,due:0},weak=p=>p.lapses>0||(p.attempts>1&&p.correct/p.attempts<.8);
 function filter(scope){
@@ -476,29 +586,34 @@ function filter(scope){
  if(!s)return [];
  return s.items.filter(x=>scope!=="weak"||weak(progress(s.id,x.id)));
 }
-function grade(id,result,mode='cards'){let p={...progress(active,id)};p.attempts++;const counter=mode==='quiz'?'quizAttempts':'cardAttempts';p[counter]=(Number.isFinite(p[counter])?p[counter]:0)+1;if(result==="wrong"){p.lapses++;p.reps=0;p.interval=1}else{p.correct++;p.reps=result==="good"?p.reps+1:Math.max(1,p.reps);const days=result==="good"?[1,3,7,14,30,60]:[1,3,7,14];p.interval=days[Math.min(days.length-1,p.reps-1)]}const now=Date.now();selected().lastStudiedAt=now;p.due=now+DAY*p.interval;state.progress[pkey(active,id)]=p;save();renderSets()}
+function grade(id,result,mode='cards'){let p={...progress(active,id)};p.attempts++;const counter=mode==='quiz'?'quizAttempts':'cardAttempts';p[counter]=(Number.isFinite(p[counter])?p[counter]:0)+1;if(result==="wrong"){p.lapses++;p.reps=0;p.interval=1}else{p.correct++;p.reps=result==="good"?p.reps+1:Math.max(1,p.reps);const days=result==="good"?[1,3,7,14,30,60]:[1,3,7,14];p.interval=days[Math.min(days.length-1,p.reps-1)]}const now=Date.now();selected().lastStudiedAt=now;p.due=now+DAY*p.interval;state.progress[pkey(active,id)]=p;renderSets()}
 
+let navigationVersion=0;
 function tab(name,afterRender){
+ const version=++navigationVersion;
  if(name!=="sets"&&!selected())name="sets";
  const target=$(name);
 
- const switchScreen=()=>{
+ const switchScreen=async()=>{
+  if(version!==navigationVersion)return;
   document.querySelectorAll(".screen").forEach(v=>v.classList.toggle("active",v===target));
   document.body.classList.toggle('study-mode',name==='cards'||name==='quiz');
   setSidebar(!document.body.classList.contains('sidebar-hidden'),false);
   if(name==="sets")renderSets();
   if(name==="list")renderList();
-  if(name==="cards")buildCards();
-  if(name==="quiz"){$("quizTitle").textContent=selected().title;restoreQuiz();}
+  if(name==="cards")await buildCards();
+  if(name==="quiz"){$("quizTitle").textContent=selected().title;await restoreQuiz();}
+  if(version!==navigationVersion)return;
+  if(name!=='sets'&&!selected()){tab('sets');return}
   state.view={setId:active,screen:name};save();
   $("workspaceTitle").textContent=name==="sets"?"Reviewer":selected().title;
   renderSets();$("workspace").scrollTop=0;
   afterRender?.();
  };
  if(document.startViewTransition&&!window.matchMedia("(prefers-reduced-motion: reduce)").matches){
-  document.startViewTransition(switchScreen);
+  return document.startViewTransition(switchScreen).updateCallbackDone;
  }else{
-  switchScreen();
+  return switchScreen();
  }
 }
 $("back").onclick=$("homeLink").onclick=()=>tab("sets");
@@ -602,15 +717,15 @@ function renderList(){
  $("stats").innerHTML=vals.map(a=>'<div><strong>'+a[1]+'</strong><span>'+a[0]+'</span></div>').join("");
  const q=$("search").value.trim().toLowerCase();
  const cards=filter($("filter").value).filter(x=>[x.term,x.meaning,x.explanation].some(t=>t.toLowerCase().includes(q)));
- $("items").innerHTML=cards.length?cards.map(x=>'<article class="item" data-card-id="'+esc(x.id)+'"><div class="item-copy">'+(weak(progress(s.id,x.id))?'<span class="tag">苦手</span>':'')+'<h3>'+esc(x.term)+'</h3><p>'+esc(x.meaning)+'</p></div><div class="item-tools">'+cardAction('explanation',x.id,x.term+'の解説・例を見る')+(s.sourceId?'':cardAction('edit',x.id,x.term+'を編集')+cardAction('remove',x.id,x.term+'を削除'))+'</div></article>').join(''):'<div class="panel muted">該当するカードはありません。</div>';
+ $("items").innerHTML=cards.length?cards.map(x=>'<article class="item" data-card-id="'+esc(x.id)+'"><div class="item-copy">'+(weak(progress(s.id,x.id))?'<span class="tag">苦手</span>':'')+'<h3>'+esc(x.term)+'</h3><p>'+esc(x.meaning)+'</p>'+((x.image||x.answerImage)?'<div class="card-thumbnails">'+imageMarkup(x.image,x.term)+imageMarkup(x.answerImage,x.meaning)+'</div>':'')+'</div><div class="item-tools">'+cardAction('explanation',x.id,x.term+'の解説・例を見る')+(s.sourceId?'':cardAction('edit',x.id,x.term+'を編集')+cardAction('remove',x.id,x.term+'を削除'))+'</div></article>').join(''):'<div class="panel muted">該当するカードはありません。</div>';
 }
 function showExplanation(id){
  const x=selected()?.items.find(x=>x.id===id);if(!x)return;
- $("explanationTitle").textContent=x.term;$("explanationMeaning").textContent=x.meaning;
+ $("explanationTitle").textContent=x.term;$("explanationMeaning").textContent=x.meaning;$("explanationImages").innerHTML=imageMarkup(x.image,x.term)+imageMarkup(x.answerImage,x.meaning);
  $("explanationText").textContent=x.explanation;$("explanationTextSection").hidden=!x.explanation;
  $("explanationExample").textContent=x.example;$("explanationTranslation").textContent=x.translation;
  $("explanationExampleSection").hidden=!x.example&&!x.translation;
- $("explanationEmpty").hidden=!!(x.explanation||x.example||x.translation);
+ $("explanationEmpty").hidden=!!(x.explanation||x.example||x.translation||x.image||x.answerImage);
  $("explanationDialog").showModal();$("explanationDialog").querySelector('.dialog-body').scrollTop=0;
 }
 $("search").oninput=renderList;$("filter").onchange=renderList;
@@ -624,19 +739,23 @@ function buildCards(reset=false){
  deck=saved.ids.map(id=>selected().items.find(x=>x.id===id)).filter(Boolean);
  pos=Math.min(saved.pos,Math.max(0,deck.length-1));reveal=!!saved.reveal;
  }else{deck=[...filter($("cardScope").value)];pos=0;reveal=false}
- renderCard();
+ return renderCard();
 }
-function renderCard(){session().cards={ids:deck.map(x=>x.id),pos,reveal,scope:$("cardScope").value};save();let x=deck[pos];$("cardCount").textContent=x?(pos+1)+" / "+deck.length:"0 / 0";$("cardBar").style.width=x?(100*(pos+1)/deck.length)+"%":"0%";$("grades").hidden=!x||!reveal;$("prev").disabled=pos===0;$("next").disabled=!x||pos>=deck.length-1;$("flip").disabled=!x;$("flip").textContent=reveal?"答えを隠す":"答えを見る";$("flash").scrollTop=0;$("flash").innerHTML=x?'<strong>'+esc(x.term)+'</strong>'+(reveal?'<div><b>'+esc(x.meaning)+'</b><p class="detail">'+esc(x.explanation)+'</p><p class="example">'+esc(x.example)+'\n'+esc(x.translation)+'</p></div>':'<p class="muted">答えを思い出してから表示</p>'):'<p class="muted">対象カードがありません。</p>'}
+let cardRenderVersion=0;
+async function renderCard(){const version=++cardRenderVersion;for(const button of $("cards").querySelectorAll("button:not([data-detail-back]),select"))button.disabled=true;session().cards={ids:deck.map(x=>x.id),pos,reveal,scope:$("cardScope").value};await save();if(version!==cardRenderVersion)return;for(const button of $("cards").querySelectorAll("button:not([data-detail-back]),select"))button.disabled=false;let x=deck[pos];$("cardCount").textContent=x?(pos+1)+" / "+deck.length:"0 / 0";$("cardBar").style.width=x?(100*(pos+1)/deck.length)+"%":"0%";$("grades").hidden=!x||!reveal;$("prev").disabled=pos===0;$("next").disabled=!x||pos>=deck.length-1;$("flip").disabled=!x;$("flip").textContent=reveal?"答えを隠す":"答えを見る";$("flash").scrollTop=0;$("flash").innerHTML=x?'<strong>'+esc(x.term)+'</strong>'+imageMarkup(x.image,x.term)+(reveal?'<div><b>'+esc(x.meaning)+'</b>'+imageMarkup(x.answerImage,x.meaning)+'<p class="detail">'+esc(x.explanation)+'</p><p class="example">'+esc(x.example)+'\n'+esc(x.translation)+'</p></div>':'<p class="muted">答えを思い出してから表示</p>'):'<p class="muted">対象カードがありません。</p>'}
 $("restartCards").onclick=()=>buildCards(true);$("cardScope").onchange=()=>buildCards(true);$("flip").onclick=()=>{reveal=!reveal;renderCard()};$("prev").onclick=()=>{if(pos>0){pos--;reveal=false;renderCard()}};$("next").onclick=()=>{if(pos<deck.length-1){pos++;reveal=false;renderCard()}};$("shuffle").onclick=()=>{deck.sort(()=>Math.random()-.5);pos=0;reveal=false;renderCard()};document.querySelectorAll("[data-grade]").forEach(b=>b.onclick=()=>{if(!deck[pos])return;grade(deck[pos].id,b.dataset.grade);deck.splice(pos,1);pos=Math.min(pos,Math.max(deck.length-1,0));reveal=false;renderCard()});
+let quizRenderVersion=0;
 function resetQuizView(){
+ quizRenderVersion++;$("startQuiz").disabled=false;$("quizScope").disabled=false;
  $("quizCount").textContent="";
  $("quizBar").style.width="0%";
  $("quizBody").innerHTML='<div class="flash muted">範囲を選んで「クイズ開始」を押してください。</div>';
 }
 function saveQuiz(){
- session().quiz={queue,current:quizCurrent,order:quizOrder,answered:quizAnswered,total:quizTotal,seen:[...firstSeen],wrong:[...wrongOnce],right:firstRight,scope:$("quizScope").value};save();
+ session().quiz={queue,current:quizCurrent,order:quizOrder,answered:quizAnswered,total:quizTotal,seen:[...firstSeen],wrong:[...wrongOnce],right:firstRight,scope:$("quizScope").value};return save();
 }
 function restoreQuiz(){
+ quizRenderVersion++;$("startQuiz").disabled=false;$("quizScope").disabled=false;
  const saved=session().quiz;
  if(!saved){resetQuizView();return}
  const ids=new Set(selected().items.map(x=>x.id));
@@ -644,7 +763,7 @@ function restoreQuiz(){
  quizOrder=saved.order;quizAnswered=saved.answered;quizTotal=saved.total;
  firstSeen=new Set(saved.seen);wrongOnce=new Set(saved.wrong);firstRight=saved.right;
  $("quizScope").value=saved.scope;
- if(quizCurrent&&!ids.has(quizCurrent)){nextQuiz();return}
+ if(quizCurrent&&!ids.has(quizCurrent))return nextQuiz();
  renderQuiz();
 }
 function startQuiz(){
@@ -655,10 +774,12 @@ function startQuiz(){
  firstRight=0;
  nextQuiz();
 }
-function nextQuiz(){
+async function nextQuiz(){
+ const version=++quizRenderVersion;
+ $("quizBody").querySelectorAll("button").forEach(button=>button.disabled=true);
  quizCurrent=queue.shift()||null;quizOrder=[0,1,2,3].sort(()=>Math.random()-.5);quizAnswered=null;
  if(quizCurrent)firstSeen.add(quizCurrent);
- saveQuiz();renderQuiz();
+ const setId=active;$("startQuiz").disabled=true;$("quizScope").disabled=true;await saveQuiz();if(version!==quizRenderVersion||active!==setId)return;$("startQuiz").disabled=false;$("quizScope").disabled=false;renderQuiz();
 }
 function renderQuiz(){
  const id=quizCurrent,x=selected()?.items.find(a=>a.id===id);
@@ -676,26 +797,27 @@ function renderQuiz(){
  }
  firstSeen.add(id);
  const order=quizOrder;
- $("quizBody").innerHTML='<div class="flash" id="feedback" aria-live="polite"><strong>'+esc(x.question)+'</strong></div><div class="quiz-choices" id="quizAnswers">'+order.map(i=>'<button class="choice" data-answer="'+i+'">'+esc(x.options[i])+'</button>').join("")+'</div>';
+ $("quizBody").innerHTML='<div class="flash" id="feedback" aria-live="polite"><strong>'+esc(x.question)+'</strong>'+imageMarkup(x.image,x.term)+'</div><div class="quiz-choices" id="quizAnswers">'+order.map(i=>'<button class="choice" data-answer="'+i+'">'+esc(x.options[i])+'</button>').join("")+'</div>';
  const choices=$("quizBody").querySelectorAll("[data-answer]");
- choices.forEach(b=>b.onclick=()=>{
+ choices.forEach(b=>b.onclick=async()=>{
+  const setId=active,current=quizCurrent;
   choices.forEach(choice=>choice.disabled=true);
   const ok=+b.dataset.answer===x.answer;
   if(ok&&!wrongOnce.has(x.id))firstRight++;
   if(!ok){wrongOnce.add(x.id);queue.push(x.id)}
   grade(x.id,ok?"good":"wrong",'quiz');
-  quizAnswered=ok;saveQuiz();renderQuizFeedback(x,ok);
+  quizAnswered=ok;await saveQuiz();if(active===setId&&quizCurrent===current)renderQuizFeedback(x,ok);
  });
  if(quizAnswered!==null)renderQuizFeedback(x,quizAnswered);
 }
 function renderQuizFeedback(x,ok){
-  $("feedback").innerHTML='<strong>'+(ok?"正解":"不正解 — 後で再出題")+'</strong><div><p>正解：'+esc(x.options[x.answer])+'</p><p class="detail">'+esc(x.explanation)+'</p></div>';
+  $("feedback").innerHTML='<strong>'+(ok?"正解":"不正解 — 後で再出題")+'</strong><div><p>正解：'+esc(x.options[x.answer])+'</p>'+imageMarkup(x.image,x.term)+imageMarkup(x.answerImage,x.meaning)+'<p class="detail">'+esc(x.explanation)+'</p></div>';
   $("feedback").scrollTop=0;
   const answers=$("quizAnswers");
   answers.className="actions";
   answers.innerHTML='<button id="continue" class="primary">次へ</button>';
   $("continue").onclick=()=>{
-   nextQuiz();
+   $("continue").disabled=true;nextQuiz();
    $("quizBody").querySelector("button")?.focus({preventScroll:true});
   };
  }
@@ -748,8 +870,49 @@ $("exportSetAction").onclick=()=>{
 $("deleteSet").onclick=()=>removeSet(active);$("newSet").onclick=()=>{$("createDialog").showModal();$("createTitle").focus()};
 $("cancelCreate").onclick=()=>{$("createDialog").close()};
 $("createForm").onsubmit=e=>{e.preventDefault();const title=$("createTitle").value.trim(),description=$("createDesc").value;if(!title)return;const id=freshSetId();state.sets.push(newSet(id,title,description));save();$("createForm").reset();$("createDialog").close();open(id)};$("editSet").onclick=()=>showSet(active);$("cancelSet").onclick=()=>$("setDialog").close();$("setForm").onsubmit=e=>{e.preventDefault();let title=$("sTitle").value.trim();if(!title)return;if(editingSet){let s=state.sets.find(x=>x.id===editingSet);s.title=title;s.description=$("sDesc").value;s.updatedAt=Date.now()}else{const id=freshSetId();state.sets.push(newSet(id,title,$("sDesc").value));active=id}save();$("setDialog").close();renderSets();if(selected())renderList()};
-function showItem(id){$("itemMessage").hidden=true;editingItem=id||"";let x=selected()?.items.find(v=>v.id===id);for(const [field,value]of Object.entries({Term:x?.term||"",Meaning:x?.meaning||"",Explanation:x?.explanation||"",Example:x?.example||"",Translation:x?.translation||"",Question:x?.question||"",Options:x?.options.join("\n")||"",Answer:String(x?.answer||0)}))$("i"+field).value=value;$("itemDialog").showModal()}
-$("newItem").onclick=()=>showItem("");$("cancelItem").onclick=()=>$("itemDialog").close();$("itemForm").onsubmit=e=>{e.preventDefault();try{let x=item({id:editingItem||freshItemId(selected().items),type:selected().items.find(v=>v.id===editingItem)?.type||"word",term:$("iTerm").value,meaning:$("iMeaning").value,explanation:$("iExplanation").value,example:$("iExample").value,translation:$("iTranslation").value,question:$("iQuestion").value,options:$("iOptions").value.trim().split("\n"),answer:$("iAnswer").value});let s=selected();s.items=s.items.filter(a=>a.id!==editingItem);s.items.push(x);s.updatedAt=Date.now();save();$("itemDialog").close();renderList()}catch(e){$("itemMessage").textContent=e.message;$("itemMessage").hidden=false;$("itemMessage").scrollIntoView({block:"nearest"})}};
+let editingImages={},imageGeneration=0,imageJobs={};
+async function compressImage(file){
+ if(file.size>20*1024*1024)throw Error('20MB以下の画像を選択してください');
+ if(!['image/png','image/jpeg','image/webp','image/gif','image/avif'].includes(file.type))throw Error('対応していない画像形式です');
+ const url=URL.createObjectURL(file),image=new Image();
+ try{
+ image.src=url;await image.decode();
+ if(image.naturalWidth*image.naturalHeight>60000000)throw Error('画像を小さくしてください');
+ const scale=Math.min(1,1600/Math.max(image.naturalWidth,image.naturalHeight));
+ let width=Math.max(1,Math.round(image.naturalWidth*scale)),height=Math.max(1,Math.round(image.naturalHeight*scale));
+ const canvas=document.createElement('canvas'),context=canvas.getContext('2d');
+ for(let step=0;step<9;step++){
+ canvas.width=width;canvas.height=height;context.drawImage(image,0,0,width,height);
+ let blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/webp',Math.max(.6,.82-step*.03)));
+ if(!blob||blob.type!=='image/webp'){
+ context.fillStyle='#fff';context.fillRect(0,0,width,height);context.drawImage(image,0,0,width,height);
+ blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/jpeg',Math.max(.6,.82-step*.03)));
+ }
+ if(blob&&blob.size<=256*1024)return validateImage(await blobDataURL(blob));
+ width=Math.max(1,Math.round(width*.8));height=Math.max(1,Math.round(height*.8));
+ }
+ throw Error('画像を小さくしてください');
+ }catch(error){if(error.name==='EncodingError')throw Error('画像を読み込めません');throw error}finally{URL.revokeObjectURL(url)}
+}
+function updateImageEditor(){
+ for(const [field,id]of [['image','iImage'],['answerImage','iAnswerImage']]){
+ const preview=$(id+'Preview');preview.parentElement.hidden=!editingImages[field];
+ if(editingImages[field])preview.src=editingImages[field];else preview.removeAttribute('src');
+ $(id).setAttribute('aria-busy',String(!!imageJobs[field]));
+ }
+ $("itemForm").querySelector('[type="submit"],.dialog-footer .primary').disabled=Object.values(imageJobs).some(Boolean);
+}
+for(const [field,id]of [['image','iImage'],['answerImage','iAnswerImage']])$(id).onchange=async e=>{
+ const file=e.target.files[0];e.target.value='';if(!file)return;
+ const generation=imageGeneration,job=Symbol();imageJobs[field]=job;$("itemMessage").hidden=true;updateImageEditor();
+ try{const src=await compressImage(file);if(generation===imageGeneration&&imageJobs[field]===job)editingImages[field]=src}
+ catch(error){if(generation===imageGeneration&&imageJobs[field]===job){$("itemMessage").textContent=error.message;$("itemMessage").hidden=false;$("itemMessage").scrollIntoView({block:'nearest'})}}
+ finally{if(generation===imageGeneration&&imageJobs[field]===job){delete imageJobs[field];updateImageEditor()}}
+};
+document.querySelectorAll('[data-remove-image]').forEach(button=>button.onclick=()=>{const field=button.dataset.removeImage;delete imageJobs[field];delete editingImages[field];updateImageEditor()});
+$("itemDialog").addEventListener('close',()=>{imageGeneration++;imageJobs={};editingImages={}});
+function showItem(id){$("itemMessage").hidden=true;editingItem=id||"";let x=selected()?.items.find(v=>v.id===id);imageGeneration++;imageJobs={};editingImages={image:x?.image||"",answerImage:x?.answerImage||""};for(const [field,value]of Object.entries({Term:x?.term||"",Meaning:x?.meaning||"",Explanation:x?.explanation||"",Example:x?.example||"",Translation:x?.translation||"",Question:x?.question||"",Options:x?.options.join("\n")||"",Answer:String(x?.answer||0)}))$("i"+field).value=value;$("itemDialog").showModal();updateImageEditor()}
+$("newItem").onclick=()=>showItem("");$("cancelItem").onclick=()=>$("itemDialog").close();$("itemForm").onsubmit=async e=>{e.preventDefault();if(Object.values(imageJobs).some(Boolean))return;const generation=imageGeneration;try{let x=item({id:editingItem||freshItemId(selected().items),type:selected().items.find(v=>v.id===editingItem)?.type||"word",...editingImages,term:$("iTerm").value,meaning:$("iMeaning").value,explanation:$("iExplanation").value,example:$("iExample").value,translation:$("iTranslation").value,question:$("iQuestion").value,options:$("iOptions").value.trim().split("\n"),answer:$("iAnswer").value});let s=selected();s.items=s.items.filter(a=>a.id!==editingItem);s.items.push(x);s.updatedAt=Date.now();const saved=await save();if(generation!==imageGeneration)return;if(!saved){$("itemMessage").textContent="保存に失敗しました";$("itemMessage").hidden=false;return}$("itemDialog").close();renderList()}catch(e){$("itemMessage").textContent=e.message;$("itemMessage").hidden=false;$("itemMessage").scrollIntoView({block:"nearest"})}};
 $("items").onclick=async e=>{
  const b=e.target.closest('button');if(!b)return;
  if(b.dataset.explanation){showExplanation(b.dataset.explanation);return}
@@ -799,7 +962,7 @@ async function importData(raw){
    restoreStudyDate(loaded,next.progress);
   }
  }
- state=next;save();renderSets();return incoming.length;
+ state=next;if(!await save())throw Error('保存に失敗しました');renderSets();return incoming.length;
 }
 async function doImport(t){try{$("message").textContent=await importData(JSON.parse(t))+"セットを取り込みました"}catch(e){$("message").textContent="エラー: "+e.message}}
 $("importJson").onclick=()=>doImport($("jsonInput").value);$("file").onchange=async e=>{if(e.target.files[0])doImport(await e.target.files[0].text());e.target.value=""};
@@ -1064,10 +1227,13 @@ $("sources").onclick=async e=>{
  for(const k of Object.keys(state.progress))if(ids.some(id=>k.startsWith(id+'/')))delete state.progress[k];save();renderSets();
  }
 };
-updateSortButtons();load();renderSets();
+$("storageRetry").onclick=()=>storageReadFailed?location.reload():save();
+$("storageBackup").onclick=()=>download('reviewer-backup.json',state);
+updateSortButtons();await load();renderSets();
 if(state.view&&state.sets.some(s=>s.id===state.view.setId)&&['list','cards','quiz'].includes(state.view.screen)){
- active=state.view.setId;tab(state.view.screen);
+ active=state.view.setId;await tab(state.view.screen);
 }
+document.body.dataset.ready='true';
 for(const source of state.sources||[])syncSource(source);
 
 })();</script></body></html>

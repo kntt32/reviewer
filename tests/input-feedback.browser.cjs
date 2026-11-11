@@ -1,3 +1,4 @@
+const {createPage}=require('./browser-storage.cjs');
 const {chromium}=require('playwright');
 const fs=require('node:fs');
 const assert=require('node:assert/strict');
@@ -6,24 +7,24 @@ const browser=await chromium.launch({executablePath:process.env.CHROMIUM_PATH||'
 try{
 for(const mode of ['mouse','touch','hybrid']){
  const mobile=mode==='touch',touch=mode!=='mouse';
- const page=await browser.newPage({viewport:{width:mobile?390:1280,height:800},isMobile:mobile,hasTouch:touch,reducedMotion:'reduce'}),errors=[];page.on('pageerror',e=>errors.push(e.message));
+ const page=await createPage(browser,{viewport:{width:mobile?390:1280,height:800},isMobile:mobile,hasTouch:touch,reducedMotion:'reduce'}),errors=[];page.on('pageerror',e=>errors.push(e.message));
  await page.route('https://reviewer.test/**',r=>r.fulfill({contentType:'text/html',body:fs.readFileSync(new URL('../dist/reviewer.html',`file://${__filename}`),'utf8')}));
  await page.goto('https://reviewer.test/reviewer');
- await page.evaluate(()=>localStorage.setItem('kntt.reviewer.v2',JSON.stringify({sets:[{id:'s',title:'English',items:[{id:'c',term:'term',meaning:'meaning',options:['a','b','c','d'],answer:0}]}],progress:{}})));await page.reload();
+ await page.evaluate(async()=>localStorage.setItem('kntt.reviewer.v2',JSON.stringify({sets:[{id:'s',title:'English',items:[{id:'c',term:'term',meaning:'meaning',options:['a','b','c','d'],answer:0}]}],progress:{}})));await page.reload();
  const activate=async selector=>touch?await page.locator(selector).tap():await page.locator(selector).click();
  const sidebar=async()=>{if(await page.locator('#sidebar').getAttribute('aria-hidden')==='true')await activate('#toggleSidebar')};
  async function clean(selector){
  await page.waitForTimeout(180);
- assert.equal(await page.evaluate(()=>document.documentElement.dataset.keyboard),'false');
- const style=await page.locator(selector).evaluate(e=>{const s=getComputedStyle(e);return {outline:s.outlineStyle,opacity:s.opacity,bg:s.backgroundColor}});
+ assert.equal(await page.evaluate(async()=>document.documentElement.dataset.keyboard),'false');
+ const style=await page.locator(selector).evaluate(async e=>{const s=getComputedStyle(e);return {outline:s.outlineStyle,opacity:s.opacity,bg:s.backgroundColor}});
  assert.equal(style.outline,'none',selector+' retains no pointer focus outline');assert.equal(style.opacity,'1',selector+' retains no hover opacity');return style;
  }
- assert.equal(await page.evaluate(()=>document.documentElement.dataset.keyboard),'false','initial page does not assume keyboard selection');
+ assert.equal(await page.evaluate(async()=>document.documentElement.dataset.keyboard),'false','initial page does not assume keyboard selection');
  await sidebar();
  for(const [button,dialog] of [['#newSet','createDialog'],['#showImport','importDialog'],['#showExport','exportDialog']]){
- const initial=await page.locator(button).evaluate(e=>getComputedStyle(e).backgroundColor);
+ const initial=await page.locator(button).evaluate(async e=>getComputedStyle(e).backgroundColor);
  await page.locator(button).hover();await page.waitForTimeout(180);
- assert.equal(await page.locator(button).evaluate(e=>getComputedStyle(e).backgroundColor),initial,button+' does not look selected before activation');
+ assert.equal(await page.locator(button).evaluate(async e=>getComputedStyle(e).backgroundColor),initial,button+' does not look selected before activation');
  await activate(button);
  const close=dialog==='createDialog'?'#cancelCreate':'#'+dialog+' .dialog-footer [data-close-dialog]';await activate(close);
  assert.equal((await clean(button)).bg,'rgba(0, 0, 0, 0)',button+' clears hover fill');
@@ -41,8 +42,8 @@ for(const mode of ['mouse','touch','hybrid']){
  await activate('#cards [data-detail-back]');await activate('#openQuiz');await activate('#startQuiz');await activate('[data-answer="0"]');await clean('#continue');
  await activate('#quiz [data-detail-back]');await sidebar();
  await activate('#toggleSidebar');await clean('#toggleSidebar');
- await page.keyboard.press('Tab');assert.equal(await page.evaluate(()=>document.documentElement.dataset.keyboard),'true');
- assert.equal(await page.evaluate(()=>getComputedStyle(document.activeElement).outlineStyle),'solid','keyboard focus indicator remains available');
+ await page.keyboard.press('Tab');assert.equal(await page.evaluate(async()=>document.documentElement.dataset.keyboard),'true');
+ assert.equal(await page.evaluate(async()=>getComputedStyle(document.activeElement).outlineStyle),'solid','keyboard focus indicator remains available');
  if(mode==='hybrid'){
  await page.locator('#toggleSidebar').click();await clean('#toggleSidebar');await page.locator('#toggleSidebar').tap();await clean('#toggleSidebar');
  }

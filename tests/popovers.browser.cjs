@@ -1,3 +1,4 @@
+const {createPage}=require('./browser-storage.cjs');
 const {chromium}=require('playwright');
 const fs=require('node:fs');
 const assert=require('node:assert/strict');
@@ -5,9 +6,9 @@ const assert=require('node:assert/strict');
 const browser=await chromium.launch({executablePath:process.env.CHROMIUM_PATH||'/usr/bin/chromium',headless:true,args:['--no-sandbox']});
 try{
 for(const viewport of [{width:1280,height:800},{width:390,height:640},{width:820,height:360}]){
- const page=await browser.newPage({viewport,reducedMotion:'reduce'}),errors=[];page.on('pageerror',e=>errors.push(e.message));
+ const page=await createPage(browser,{viewport,reducedMotion:'reduce'}),errors=[];page.on('pageerror',e=>errors.push(e.message));
  await page.route('https://reviewer.test/**',r=>r.fulfill({contentType:'text/html',body:fs.readFileSync(new URL('../dist/reviewer.html',`file://${__filename}`),'utf8')}));
- await page.goto('https://reviewer.test/reviewer');await page.evaluate(()=>localStorage.setItem('kntt.reviewer.v2',JSON.stringify({sets:[{id:'s',title:'English',items:[]}],progress:{}})));await page.reload();
+ await page.goto('https://reviewer.test/reviewer');await page.evaluate(async()=>localStorage.setItem('kntt.reviewer.v2',JSON.stringify({sets:[{id:'s',title:'English',items:[]}],progress:{}})));await page.reload();
  if(viewport.width<=760)await page.locator('#toggleSidebar').click();
  async function checkMenu(id){
  const box=await page.locator('#'+id).boundingBox();assert.ok(box.width<=240);assert.ok(box.x>=0&&box.x+box.width<=viewport.width&&box.y>=0&&box.y+box.height<=viewport.height+1);
