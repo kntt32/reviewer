@@ -5,7 +5,7 @@ main.wrap{padding-top:10px;padding-bottom:calc(45px + env(safe-area-inset-bottom
 main.wrap:after{display:none!important}
 .app-header{padding-top:22px;padding-bottom:6px}
 .home-link{all:unset;cursor:pointer}
-.home-link:focus-visible{outline:2px solid var(--accent);outline-offset:4px;border-radius:4px}
+:root[data-keyboard="true"] .home-link:focus-visible{outline:2px solid var(--accent);outline-offset:4px;border-radius:4px}
 .home-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin:20px 0 16px}
 .home-actions button{display:flex;align-items:center;justify-content:center;gap:8px;min-width:0;padding:10px 6px;white-space:nowrap}
 .home-actions svg,.study-actions svg,.icon-btn svg,.back-link svg{flex-shrink:0}
@@ -16,7 +16,7 @@ main.wrap:after{display:none!important}
 .set-open{width:100%;padding:20px;text-align:left;display:grid;gap:10px;min-height:132px;align-content:center;justify-items:start}
 .set-open h3{margin:0;font-size:1.12rem}.set-open p{margin:0;line-height:1.65}
 .set-open .open-tail{color:var(--accent);font-size:.8rem;font-weight:650}
-@media(hover:hover) and (pointer:fine){.set-open:active{transform:scale(.99)}}
+
 .create-inline{display:grid;gap:12px;margin:0 0 18px;padding:19px;background:var(--panel);border:1px solid var(--line);border-radius:17px}
 .create-inline label{font-size:.85rem;font-weight:650}.create-inline input,.create-inline textarea{width:100%;display:block;margin-top:6px}.create-inline h2{margin:0}
 .create-inline[hidden]{display:none!important}
@@ -114,10 +114,10 @@ button,a,input,select,textarea,summary,label,.flash,.quiz-choices{touch-action:m
 button,a,summary{-webkit-tap-highlight-color:transparent}
 button,input,textarea,select{border-radius:8px}
 button{transition:background-color 140ms ease,border-color 140ms ease,color 140ms ease}
-@media(hover:hover) and (pointer:fine){button:hover:not(:disabled){background:var(--soft)}}
+
 .primary{background:var(--accent);color:var(--bg)}
-@media(hover:hover) and (pointer:fine){.primary:hover:not(:disabled){background:var(--accent);opacity:.85}}
-button:focus-visible,a:focus-visible,summary:focus-visible{outline:2px solid var(--muted);outline-offset:3px}
+
+:root[data-keyboard="true"] button:focus-visible,:root[data-keyboard="true"] a:focus-visible,:root[data-keyboard="true"] summary:focus-visible{outline:2px solid var(--muted);outline-offset:3px}
 body,body:has(#cards.active,#quiz.active){height:100dvh;min-height:0;display:block;overflow:hidden}
 .app-shell{height:100%;display:grid;grid-template-columns:var(--sidebar-width) minmax(0,1fr);overflow:hidden;transition:grid-template-columns var(--motion) var(--ease)}
 .sidebar-rail{min-width:0;overflow:hidden;background:transparent;visibility:visible;transition:visibility 0s}
@@ -136,14 +136,14 @@ body,body:has(#cards.active,#quiz.active){height:100dvh;min-height:0;display:blo
 .home-actions{display:flex;flex-direction:column;gap:0;margin:0 0 12px}
 .home-actions button{justify-content:flex-start;gap:10px;min-height:32px;padding:6px 10px;border:0;border-radius:6px;background:transparent;color:var(--text);font-size:.84rem;line-height:1.3;white-space:normal;text-align:left}
 .home-actions svg{width:17px;height:17px}
-@media(hover:hover) and (pointer:fine){.home-actions button:hover,.set-open:hover{background:var(--soft)}}
+
 .sidebar-section{margin-bottom:10px}
 .sidebar-section>summary{cursor:pointer;font-size:.75rem;font-weight:600;color:var(--muted);padding:7px 8px;user-select:none}
 .sort-label{display:flex;align-items:center;gap:5px;margin:0 6px 3px;font-size:.67rem;color:var(--muted)}
 .sort-label select{width:100%;min-width:0;flex:1;padding:3px;font-size:.69rem;background:transparent;border-color:transparent}
 #sidebar .set-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:1px}
 #sidebar .set-open{display:flex;align-items:center;justify-content:space-between;gap:6px;min-height:32px;padding:6px 10px;border:0;border-radius:6px;background:transparent;overflow-wrap:anywhere}
-#sidebar .set-open[aria-current="page"]{background:var(--soft)}
+#sidebar .set-open[aria-current="page"] h3{font-weight:600}
 #sidebar .set-open h3{font-size:.83rem;font-weight:400;line-height:1.4;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 #sidebar .set-open .tag{flex-shrink:0;background:none;color:var(--muted);padding:0;font-size:.62rem;white-space:nowrap}
 #sidebar .set-open p,#sidebar .set-open .open-tail{display:none}
@@ -166,7 +166,7 @@ main.wrap,#workspace{width:100%;max-width:none;flex:1;min-height:0;margin:0;padd
 .welcome p{line-height:1.8;margin:0;font-size:.9rem}
 .welcome button{font-size:.85rem;padding:9px 16px;min-height:38px;border-radius:24px}
 .github-link{display:inline-flex;align-items:center;gap:6px;margin-top:14px;color:var(--muted);font-size:.78rem;text-decoration:none}
-@media(hover:hover) and (pointer:fine){.github-link:hover{color:var(--text);text-decoration:underline}}
+
 #sets.active{height:100%}
 #list{max-width:960px;margin:auto}
 .back-link{color:var(--muted);font-size:.8rem;min-height:30px}
@@ -198,7 +198,7 @@ main.wrap,#workspace{width:100%;max-width:none;flex:1;min-height:0;margin:0;padd
 #quizBody{grid-template-rows:minmax(0,1fr) auto;gap:16px}
 .quiz-choices{grid-template-columns:repeat(2,minmax(0,1fr));max-height:40dvh;gap:8px}
 .quiz-choices .choice{min-height:54px;padding:13px 16px;font-size:.9rem;border-radius:10px}
-@media(hover:hover) and (pointer:fine){.quiz-choices .choice:hover{border-color:var(--muted)}}
+
 dialog{border-radius:14px}.result{background:var(--soft)}
 .sidebar-hidden .app-shell{grid-template-columns:0 minmax(0,1fr)}
 .sidebar-hidden .sidebar-rail{visibility:hidden;transition:visibility 0s var(--motion)}
@@ -242,7 +242,7 @@ dialog[open]{display:flex;flex-direction:column}
 .sort-toggle{position:absolute;top:1px;right:3px;background:transparent;border:0;color:var(--muted);min-width:28px;min-height:28px;padding:4px}
 .sort-choices{gap:4px;padding:10px}
 .sort-choices button{border:0;background:transparent;text-align:left;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:11px 12px;font-size:.85rem}
-.sort-choices button[aria-pressed="true"]{background:var(--soft);font-weight:600}
+.sort-choices button[aria-pressed="true"]{font-weight:600}
 #items .item{display:flex;flex-direction:row;align-items:flex-start;justify-content:space-between;gap:12px}
 .item-copy{display:grid;gap:8px;min-width:0;flex:1;overflow-wrap:anywhere}.item-copy p{margin:0;white-space:pre-wrap}
 .item-tools{display:flex;flex-shrink:0;gap:2px}
@@ -253,7 +253,7 @@ dialog[open]{display:flex;flex-direction:column}
 #sidebar .set-row{display:flex;align-items:center;min-width:0;gap:0;border-radius:6px}
 #sidebar .set-row .set-open{flex:1;min-width:0;padding-right:4px}
 .set-menu-button{flex-shrink:0;min-width:26px;min-height:30px;padding:4px;background:transparent;border:0;color:var(--muted)}
-.set-row:has([aria-current="page"]){background:var(--soft)}
+
 .set-menu-actions{gap:4px;padding:10px}
 .set-menu-actions>button{display:block;text-align:left;padding:11px 12px;border:0;background:transparent;font-size:.85rem}
 .set-menu-actions>p{padding:5px 12px 8px;line-height:1.6}
@@ -273,12 +273,14 @@ dialog[open]{display:flex;flex-direction:column}
 .menu-heading{font-size:.72rem;font-weight:600;color:var(--muted);margin:0;padding:8px 9px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .floating-menu .sort-choices,.floating-menu .set-menu-actions{display:grid;gap:2px;padding:0}
 .floating-menu button{min-height:34px;border-radius:7px;padding:8px 10px;font-size:.8rem;border:0;background:transparent;text-align:left}
-.floating-menu button:focus-visible{background:var(--soft)}
-@media(hover:hover) and (pointer:fine){.floating-menu button:hover{background:var(--soft)}}
-.floating-menu .sort-choices button[aria-checked="true"]{background:var(--soft)}
+
+
+
 .floating-menu>p{font-size:.7rem;line-height:1.5;margin:0;padding:3px 9px 8px}
 @starting-style{.floating-menu:popover-open{opacity:0;transform:translateY(-4px) scale(.98)}}
 @media(prefers-reduced-motion:reduce){.floating-menu{transition:none!important}}
+
+:root:not([data-keyboard="true"]) button:focus,:root:not([data-keyboard="true"]) a:focus,:root:not([data-keyboard="true"]) summary:focus{outline:none}
 </style></head><body>
 <div class="app-shell">
 <div class="sidebar-rail"><aside id="sidebar" aria-label="学習セットのサイドバー">
@@ -373,6 +375,13 @@ dialog[open]{display:flex;flex-direction:column}
 "use strict";
 const $=id=>document.getElementById(id),KEY="kntt.reviewer.v2",OLD="kntt.english-review.v1",SORT_KEY="kntt.reviewer.set-sort",DAY=86400000;
 const esc=x=>String(x??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+// Show focus indicators only after an actual keyboard interaction.
+const inputRoot=document.documentElement;
+inputRoot.dataset.keyboard='false';
+function pointerInteraction(){inputRoot.dataset.keyboard='false'}
+document.addEventListener('pointerdown',pointerInteraction,true);
+document.addEventListener('click',e=>{if(e.detail>0)pointerInteraction()},true);
+document.addEventListener('keydown',()=>{inputRoot.dataset.keyboard='true'},true);
 let quizCurrent=null,quizOrder=[],quizAnswered=null;
 let state={sets:[],progress:{}},active="",editingSet="",editingItem="",deck=[],pos=0,reveal=false,queue=[],firstSeen=new Set(),wrongOnce=new Set(),firstRight=0,quizTotal=0;
 const idOK=x=>typeof x==="string"&&/^[A-Za-z0-9._-]{1,100}$/.test(x);
