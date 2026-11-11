@@ -21,13 +21,13 @@ for(const viewport of [{width:1440,height:1000},{width:390,height:844}]){
  const sidebar=async()=>{if(await page.locator('#sidebar').getAttribute('aria-hidden')==='true')await page.locator('#toggleSidebar').click()};
  await sidebar();await page.locator('#homeLink').click();assert.deepEqual(await page.locator('.dashboard-metric strong').allTextContents(),['6','2','1','2']);
  if(viewport.width<=760)await page.locator('#toggleSidebar').click();
- await page.locator('[data-dashboard-explanation="c0"]').click();await page.locator('#explanationDialog[open]').waitFor();assert.equal(await page.locator('#explanationTitle').innerText(),'c0');await page.locator('[data-close-dialog="explanationDialog"]').click();
+ await page.locator('[data-dashboard-card="c0"]').click();await page.locator('#list.active').waitFor();assert.equal(await page.locator('[data-card-id="c0"] h3').innerText(),'c0');assert.equal(await page.locator('dialog[open]').count(),0);
  await page.locator('#openCards').click();await page.locator('#flip').click();await page.locator('[data-grade="good"]').click();await page.locator('#cards [data-detail-back]').click();
  await sidebar();await page.locator('#homeLink').click();assert.deepEqual(await page.locator('.dashboard-metric strong').allTextContents(),['7','2','2','2']);
  await page.locator('#showExport').click();await page.locator('#reset').click();await page.locator('#confirmAccept').click();await page.locator('#exportDialog .dialog-footer button').click();
  assert.deepEqual(await page.locator('.dashboard-metric strong').allTextContents(),['0','0','0','0']);assert.equal(await page.locator('#dashboardHistoryNote').count(),0);assert.equal(await page.locator('.dashboard-weak-card').count(),0);
  await page.reload();assert.deepEqual(await page.locator('.dashboard-metric strong').allTextContents(),['0','0','0','0']);assert.deepEqual(errors,[]);
- console.log('PASS dashboard totals, legacy history, resume recommendation, weak-card explanation, grading counters and reset:',viewport.width);await page.close();
+ console.log('PASS dashboard totals, legacy history, resume recommendation, weak-card navigation, grading counters and reset:',viewport.width);await page.close();
 }
 }finally{await browser.close()}
 })().catch(e=>{console.error(e);process.exitCode=1});

@@ -182,7 +182,7 @@ main.wrap,#workspace{width:100%;max-width:none;flex:1;min-height:0;margin:0;padd
 .stats strong{font-size:.95rem;font-weight:550}.stats span{font-size:.77rem}
 .toolbar{gap:8px;margin:10px 0 16px}.entry-search input{min-height:38px;padding-top:8px;padding-bottom:8px;font-size:.85rem}
 .toolbar select,.toolbar>button{min-height:38px;padding:7px 10px;font-size:.82rem}
-#items{gap:0}.item{padding:18px 0;border:0;border-top:1px solid var(--line);border-radius:0;background:transparent;gap:8px}
+#items{gap:0}#items .item{scroll-margin-top:12px}.item{padding:18px 0;border:0;border-top:1px solid var(--line);border-radius:0;background:transparent;gap:8px}
 .item h3{font-size:1rem;font-weight:550}.item p,.item summary{font-size:.88rem}.item .tag{padding:0;background:none;color:var(--muted);font-size:.7rem}
 .item .actions{gap:6px}.item .actions button{flex:0 0 auto;border:0;background:transparent;padding:4px 8px;min-height:30px;color:var(--muted);font-size:.75rem}
 .item .actions .danger{color:#b44e58}.example{border-left:2px solid var(--line);color:var(--muted)}
@@ -301,17 +301,16 @@ dialog[open]{display:flex;flex-direction:column}
 .dashboard-recommendation h3{font-size:.98rem;font-weight:550;line-height:1.6;margin:0;overflow-wrap:anywhere}
 .dashboard-recommendation button{font-size:.78rem;min-height:34px;padding:7px 10px;margin-top:auto;display:flex;gap:16px;align-items:center}
 .dashboard-weak-list{border-top:1px solid var(--line)}
-.dashboard-weak-card{display:flex;justify-content:space-between;gap:20px;align-items:center;padding:16px 0;border-bottom:1px solid var(--line)}
-.dashboard-weak-card>div:first-child{min-width:0;overflow-wrap:anywhere}
-.dashboard-weak-card p{margin:0}.dashboard-weak-card h3{margin:6px 0;font-size:.95rem;font-weight:550;line-height:1.5}
+.dashboard-weak-card{display:flex;justify-content:space-between;gap:20px;align-items:center;width:100%;text-align:left;padding:16px 0;border:0;border-bottom:1px solid var(--line);border-radius:0;background:transparent}
+.dashboard-weak-copy{display:grid;gap:6px;min-width:0;overflow-wrap:anywhere}
+.dashboard-weak-copy strong{font-size:.95rem;font-weight:550;line-height:1.5}
 .dashboard-weak-card .small{font-size:.7rem}.dashboard-meaning{font-size:.85rem;line-height:1.6}
-.dashboard-weak-actions{display:grid;justify-items:end;gap:8px;flex-shrink:0}.dashboard-weak-actions button{font-size:.75rem;min-height:32px;padding:6px 10px}
 .dashboard-empty{padding:22px 18px;border:1px dashed var(--line);border-radius:14px;grid-column:1/-1}
 .dashboard-empty p{margin:0;font-size:.88rem;line-height:1.7}.dashboard-empty p+p{margin-top:5px;font-size:.78rem}
 .dashboard-footer{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;padding:12px 0 2px;margin-top:auto}
 .dashboard-footer .github-link{margin:0;font-size:.72rem}.dashboard-footer>span{font-size:.7rem}
 @media(max-width:1100px){.dashboard-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media(max-width:500px){#sets.active.dashboard{gap:24px;padding-top:8px}.dashboard-heading{gap:14px}.dashboard-metrics{gap:8px}.dashboard-metric{padding:14px;gap:8px}.dashboard-weak-card{gap:10px}.dashboard-weak-actions button{font-size:.7rem;padding:6px 8px}.dashboard-footer{gap:12px;padding-bottom:12px}}
+@media(max-width:500px){#sets.active.dashboard{gap:24px;padding-top:8px}.dashboard-heading{gap:14px}.dashboard-metrics{gap:8px}.dashboard-metric{padding:14px;gap:8px}.dashboard-weak-card{gap:10px}.dashboard-footer{gap:12px;padding-bottom:12px}}
 </style></head><body>
 <div class="app-shell">
 <div class="sidebar-rail"><aside id="sidebar" aria-label="学習セットのサイドバー">
@@ -479,7 +478,7 @@ function filter(scope){
 }
 function grade(id,result,mode='cards'){let p={...progress(active,id)};p.attempts++;const counter=mode==='quiz'?'quizAttempts':'cardAttempts';p[counter]=(Number.isFinite(p[counter])?p[counter]:0)+1;if(result==="wrong"){p.lapses++;p.reps=0;p.interval=1}else{p.correct++;p.reps=result==="good"?p.reps+1:Math.max(1,p.reps);const days=result==="good"?[1,3,7,14,30,60]:[1,3,7,14];p.interval=days[Math.min(days.length-1,p.reps-1)]}const now=Date.now();selected().lastStudiedAt=now;p.due=now+DAY*p.interval;state.progress[pkey(active,id)]=p;save();renderSets()}
 
-function tab(name){
+function tab(name,afterRender){
  if(name!=="sets"&&!selected())name="sets";
  const target=$(name);
 
@@ -494,6 +493,7 @@ function tab(name){
   state.view={setId:active,screen:name};save();
   $("workspaceTitle").textContent=name==="sets"?"Reviewer":selected().title;
   renderSets();$("workspace").scrollTop=0;
+  afterRender?.();
  };
  if(document.startViewTransition&&!window.matchMedia("(prefers-reduced-motion: reduce)").matches){
   document.startViewTransition(switchScreen);
@@ -505,7 +505,7 @@ $("back").onclick=$("homeLink").onclick=()=>tab("sets");
 document.querySelectorAll("[data-detail-back]").forEach(b=>b.onclick=()=>tab("list"));
 $("openCards").onclick=()=>tab("cards");
 $("openQuiz").onclick=()=>tab("quiz");
-function open(s,which="list"){active=s;tab(which);if(mobileSidebar.matches)setSidebar(false)}
+function open(s,which="list",afterRender){active=s;tab(which,afterRender);if(mobileSidebar.matches)setSidebar(false)}
 
 
 function dashboardData(sets,history,sessions,now=Date.now()){
@@ -544,13 +544,19 @@ function renderDashboard(){
  const metrics=[['学習回数',totals.attempts,'回答・評価の累計'],['クイズ回答',totals.quiz,'回'],['カード評価',totals.cards,'回'],['学習したカード',totals.learned,'枚']];
  $("dashboardMetrics").innerHTML=metrics.map(([label,value,unit])=>'<div class="dashboard-metric"><span>'+label+'</span><strong>'+number(value)+'</strong><small>'+unit+'</small></div>').join('');
  $("dashboardRecommendations").innerHTML=recommendations.length?recommendations.map(({set,resume,reason})=>'<article class="dashboard-recommendation"><p class="dashboard-reason">'+esc(reason)+'</p><h3>'+esc(set.title)+'</h3><p class="muted small">'+set.items.length+'枚 · '+(set.sourceId?'ウェブ':'ローカル')+'</p><button data-dashboard-open="'+esc(set.id)+'" data-study-mode="'+(resume||'list')+'">'+(resume?'続きから':'セットを開く')+' <span aria-hidden="true">→</span></button></article>').join(''):'<div class="dashboard-empty"><p>まだ学習できるセットがありません。</p></div>';
- $("dashboardWeakCards").innerHTML=difficult.length?difficult.map(({set,card,lapses})=>'<div class="dashboard-weak-card"><div><p class="muted small">'+esc(set.title)+'</p><h3>'+esc(card.term)+'</h3><p class="dashboard-meaning">'+esc(card.meaning)+'</p></div><div class="dashboard-weak-actions"><span class="muted small">'+(lapses?lapses+'回つまずき':'復習が必要')+'</span><button data-dashboard-explanation="'+esc(card.id)+'" data-set-id="'+esc(set.id)+'">解説を見る</button></div></div>').join(''):'<div class="dashboard-empty"><p>苦手なカードはまだありません。</p></div>';
+ $("dashboardWeakCards").innerHTML=difficult.length?difficult.map(({set,card})=>'<button type="button" class="dashboard-weak-card" data-dashboard-card="'+esc(card.id)+'" data-set-id="'+esc(set.id)+'"><span class="dashboard-weak-copy"><span class="muted small">'+esc(set.title)+'</span><strong>'+esc(card.term)+'</strong><span class="dashboard-meaning">'+esc(card.meaning)+'</span></span><span aria-hidden="true">→</span></button>').join(''):'<div class="dashboard-empty"><p>苦手なカードはまだありません。</p></div>';
 }
 $("sets").addEventListener('click',e=>{
  const start=e.target.closest('[data-dashboard-open]');
  if(start){open(start.dataset.dashboardOpen,start.dataset.studyMode);return}
- const explanation=e.target.closest('[data-dashboard-explanation]');
- if(explanation){open(explanation.dataset.setId);showExplanation(explanation.dataset.dashboardExplanation)}
+ const card=e.target.closest('[data-dashboard-card]');
+ if(card){
+ $("search").value='';$("filter").value='all';
+ open(card.dataset.setId,'list',()=>{
+ const target=[...$("items").children].find(item=>item.dataset.cardId===card.dataset.dashboardCard);
+ target?.scrollIntoView({block:'start',behavior:'auto'});
+ });
+ }
 });
 
 function renderSets(){
@@ -596,7 +602,7 @@ function renderList(){
  $("stats").innerHTML=vals.map(a=>'<div><strong>'+a[1]+'</strong><span>'+a[0]+'</span></div>').join("");
  const q=$("search").value.trim().toLowerCase();
  const cards=filter($("filter").value).filter(x=>[x.term,x.meaning,x.explanation].some(t=>t.toLowerCase().includes(q)));
- $("items").innerHTML=cards.length?cards.map(x=>'<article class="item"><div class="item-copy">'+(weak(progress(s.id,x.id))?'<span class="tag">苦手</span>':'')+'<h3>'+esc(x.term)+'</h3><p>'+esc(x.meaning)+'</p></div><div class="item-tools">'+cardAction('explanation',x.id,x.term+'の解説・例を見る')+(s.sourceId?'':cardAction('edit',x.id,x.term+'を編集')+cardAction('remove',x.id,x.term+'を削除'))+'</div></article>').join(''):'<div class="panel muted">該当するカードはありません。</div>';
+ $("items").innerHTML=cards.length?cards.map(x=>'<article class="item" data-card-id="'+esc(x.id)+'"><div class="item-copy">'+(weak(progress(s.id,x.id))?'<span class="tag">苦手</span>':'')+'<h3>'+esc(x.term)+'</h3><p>'+esc(x.meaning)+'</p></div><div class="item-tools">'+cardAction('explanation',x.id,x.term+'の解説・例を見る')+(s.sourceId?'':cardAction('edit',x.id,x.term+'を編集')+cardAction('remove',x.id,x.term+'を削除'))+'</div></article>').join(''):'<div class="panel muted">該当するカードはありません。</div>';
 }
 function showExplanation(id){
  const x=selected()?.items.find(x=>x.id===id);if(!x)return;
