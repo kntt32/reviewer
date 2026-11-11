@@ -321,6 +321,10 @@ dialog[open]{display:flex;flex-direction:column}
 .image-preview button{flex-shrink:0;min-height:32px;min-width:32px}
 #storageStatus{position:fixed;bottom:12px;left:50%;translate:-50% 0;z-index:100;max-width:calc(100vw - 24px);display:flex;align-items:center;gap:8px;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:var(--panel);font-size:.8rem;box-shadow:0 4px 20px #0002}
 #storageStatus button{min-height:32px;padding:5px 8px;font-size:.75rem;white-space:nowrap}
+
+.free-answer-form{display:grid;gap:8px;min-height:0}.free-answer-form label{font-size:.8rem;color:var(--muted)}
+.free-answer-form textarea{min-height:64px;max-height:22dvh;resize:vertical;font-size:1rem}
+.free-answer-form button{min-height:42px}
 </style></head><body>
 <div class="app-shell">
 <div class="sidebar-rail"><aside id="sidebar" aria-label="学習セットのサイドバー">
@@ -412,7 +416,7 @@ dialog[open]{display:flex;flex-direction:column}
 <hr class="dialog-divider"><h2>データ管理</h2>
 <div class="actions"><button id="reset">学習履歴を初期化</button><button id="clear" class="danger">すべて削除</button></div>
 </div></dialog>
-<dialog id="sourceDialog"><form id="sourceForm" class="form"><h2>ネットの教材を登録</h2><label>セクション名<input id="sourceName" required></label><label>JSONのURL<input id="sourceUrl" type="url" required placeholder="https://example.com/sets.json"></label><p class="muted small">公開JSONを指定してください。配信元でCORSの許可が必要です。</p><p id="sourceMessage" role="status"></p><div class="actions"><button type="button" data-close-dialog="sourceDialog">閉じる</button><button id="sourceSubmit" class="primary">登録して同期</button></div></form></dialog><dialog id="setDialog"><form id="setForm" class="form"><h2 id="setFormTitle">学習セット</h2><label>名前<input id="sTitle" required></label><label>説明<textarea id="sDesc" rows="3"></textarea></label><div class="actions"><button type="button" id="cancelSet">キャンセル</button><button class="primary">保存</button></div></form></dialog><dialog id="itemDialog"><form id="itemForm" class="form"><h2>カードの編集</h2><p id="itemMessage" class="danger" role="alert" hidden></p><label>表面<input id="iTerm" required></label><div class="image-editor"><label>表面の画像<input id="iImage" type="file" accept="image/png,image/jpeg,image/webp,image/gif,image/avif"></label><div class="image-preview" hidden><img id="iImagePreview" alt="表面の画像"><button type="button" data-remove-image="image" class="icon-btn" aria-label="表面の画像を削除"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M4 7h16M10 11v7M14 11v7M6 7l1 14h10l1-14M9 7V4h6v3"/></svg></button></div></div><label>裏面<input id="iMeaning" required></label><div class="image-editor"><label>裏面の画像<input id="iAnswerImage" type="file" accept="image/png,image/jpeg,image/webp,image/gif,image/avif"></label><div class="image-preview" hidden><img id="iAnswerImagePreview" alt="裏面の画像"><button type="button" data-remove-image="answerImage" class="icon-btn" aria-label="裏面の画像を削除"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M4 7h16M10 11v7M14 11v7M6 7l1 14h10l1-14M9 7V4h6v3"/></svg></button></div></div><label>解説<textarea id="iExplanation"></textarea></label><label>例・参考情報<textarea id="iExample"></textarea></label><label>例の解説<textarea id="iTranslation"></textarea></label><label>クイズの問題<input id="iQuestion" required></label><label>選択肢（4行）<textarea id="iOptions" required></textarea></label><label>正解<select id="iAnswer"><option value="0">1番</option><option value="1">2番</option><option value="2">3番</option><option value="3">4番</option></select></label><div class="actions"><button type="button" id="cancelItem">キャンセル</button><button class="primary">保存</button></div></form></dialog><dialog id="confirmDialog" aria-labelledby="confirmTitle" aria-describedby="confirmMessage"><div class="dialog-layout"><div class="dialog-head"><h2 id="confirmTitle">確認</h2></div><div class="dialog-body"><p id="confirmMessage" class="detail"></p></div><div class="dialog-footer actions"><button id="confirmCancel" type="button" autofocus>キャンセル</button><button id="confirmAccept" type="button" class="primary">OK</button></div></div></dialog>
+<dialog id="sourceDialog"><form id="sourceForm" class="form"><h2>ネットの教材を登録</h2><label>セクション名<input id="sourceName" required></label><label>JSONのURL<input id="sourceUrl" type="url" required placeholder="https://example.com/sets.json"></label><p class="muted small">公開JSONを指定してください。配信元でCORSの許可が必要です。</p><p id="sourceMessage" role="status"></p><div class="actions"><button type="button" data-close-dialog="sourceDialog">閉じる</button><button id="sourceSubmit" class="primary">登録して同期</button></div></form></dialog><dialog id="setDialog"><form id="setForm" class="form"><h2 id="setFormTitle">学習セット</h2><label>名前<input id="sTitle" required></label><label>説明<textarea id="sDesc" rows="3"></textarea></label><div class="actions"><button type="button" id="cancelSet">キャンセル</button><button class="primary">保存</button></div></form></dialog><dialog id="itemDialog"><form id="itemForm" class="form"><h2>カードの編集</h2><p id="itemMessage" class="danger" role="alert" hidden></p><label>表面<input id="iTerm" required></label><div class="image-editor"><label>表面の画像<input id="iImage" type="file" accept="image/png,image/jpeg,image/webp,image/gif,image/avif"></label><div class="image-preview" hidden><img id="iImagePreview" alt="表面の画像"><button type="button" data-remove-image="image" class="icon-btn" aria-label="表面の画像を削除"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M4 7h16M10 11v7M14 11v7M6 7l1 14h10l1-14M9 7V4h6v3"/></svg></button></div></div><label>裏面<input id="iMeaning" required></label><div class="image-editor"><label>裏面の画像<input id="iAnswerImage" type="file" accept="image/png,image/jpeg,image/webp,image/gif,image/avif"></label><div class="image-preview" hidden><img id="iAnswerImagePreview" alt="裏面の画像"><button type="button" data-remove-image="answerImage" class="icon-btn" aria-label="裏面の画像を削除"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M4 7h16M10 11v7M14 11v7M6 7l1 14h10l1-14M9 7V4h6v3"/></svg></button></div></div><label>解説<textarea id="iExplanation"></textarea></label><label>例・参考情報<textarea id="iExample"></textarea></label><label>例の解説<textarea id="iTranslation"></textarea></label><label>クイズの問題<input id="iQuestion" required></label><label>回答形式<select id="iResponseMode"><option value="choice">選択式</option><option value="free">自由回答</option></select></label><label id="freeAnswerField" hidden>正解例<textarea id="iAnswerText"></textarea></label><label id="choiceOptionsField">選択肢（4行）<textarea id="iOptions" required></textarea></label><label id="choiceAnswerField">正解<select id="iAnswer"><option value="0">1番</option><option value="1">2番</option><option value="2">3番</option><option value="3">4番</option></select></label><div class="actions"><button type="button" id="cancelItem">キャンセル</button><button class="primary">保存</button></div></form></dialog><dialog id="confirmDialog" aria-labelledby="confirmTitle" aria-describedby="confirmMessage"><div class="dialog-layout"><div class="dialog-head"><h2 id="confirmTitle">確認</h2></div><div class="dialog-body"><p id="confirmMessage" class="detail"></p></div><div class="dialog-footer actions"><button id="confirmCancel" type="button" autofocus>キャンセル</button><button id="confirmAccept" type="button" class="primary">OK</button></div></div></dialog>
 <div id="sortPopover" popover="auto" class="floating-menu" aria-labelledby="sortTitle"><h2 id="sortTitle" class="menu-heading">並び順</h2><div id="sortChoices" class="sort-choices" role="menu" aria-labelledby="sortTitle"></div></div>
 <dialog id="explanationDialog" aria-labelledby="explanationTitle"><div class="dialog-layout"><div class="dialog-head"><h2 id="explanationTitle"></h2></div><div class="dialog-body"><p id="explanationMeaning" class="detail"></p><div id="explanationImages"></div><section id="explanationTextSection"><h3>解説</h3><p id="explanationText" class="detail"></p></section><section id="explanationExampleSection"><h3>例・参考情報</h3><p id="explanationExample" class="example"></p><p id="explanationTranslation" class="detail muted"></p></section><p id="explanationEmpty" class="muted" hidden>解説・例はまだありません。</p></div><div class="dialog-footer actions"><button type="button" data-close-dialog="explanationDialog">閉じる</button></div></div></dialog>
 <div id="setActionsPopover" popover="auto" class="floating-menu" aria-labelledby="setActionsTitle"><h2 id="setActionsTitle" class="menu-heading"></h2><p id="setActionsHint" class="muted small" hidden>名前変更と削除はこの端末内に適用します。</p><div class="set-menu-actions" role="menu" aria-labelledby="setActionsTitle"><button type="button" id="renameSetAction" role="menuitem">名前変更</button><button type="button" id="exportSetAction" role="menuitem">このセットをエクスポート</button><button type="button" id="deleteSetAction" class="danger" role="menuitem">削除</button></div></div>
@@ -430,7 +434,7 @@ function pointerInteraction(){inputRoot.dataset.keyboard='false'}
 document.addEventListener('pointerdown',pointerInteraction,true);
 document.addEventListener('click',e=>{if(e.detail>0)pointerInteraction()},true);
 document.addEventListener('keydown',()=>{inputRoot.dataset.keyboard='true'},true);
-let quizCurrent=null,quizOrder=[],quizAnswered=null;
+let quizCurrent=null,quizOrder=[],quizAnswered=null,freeDraft='',freeRevealed=false;
 let state={sets:[],progress:{}},active="",editingSet="",editingItem="",deck=[],pos=0,reveal=false,queue=[],firstSeen=new Set(),wrongOnce=new Set(),firstRight=0,quizTotal=0;
 const idOK=x=>typeof x==="string"&&/^[A-Za-z0-9._-]{1,100}$/.test(x);
 const IMAGE_FIELDS=['image','answerImage'];
@@ -449,10 +453,12 @@ function imageMarkup(src,alt,className='card-image'){
 }
 function item(x){
  if(!x||!idOK(x.id)||!String(x.term||'').trim()||!String(x.meaning||'').trim())throw Error('カードのid/term/meaningが不正です');
- if(!Array.isArray(x.options)||x.options.length!==4||!x.options.every(a=>typeof a==='string'&&a.trim()))throw Error('optionsは4つの文字列です');
- if(!Number.isInteger(+x.answer)||+x.answer<0||+x.answer>3)throw Error('answerは0〜3です');
+ const free=x.responseMode==='free';
+ if(!free&&(!Array.isArray(x.options)||x.options.length!==4||!x.options.every(a=>typeof a==='string'&&a.trim())))throw Error('optionsは4つの文字列です');
+ if(!free&&(!Number.isInteger(+x.answer)||+x.answer<0||+x.answer>3))throw Error('answerは0〜3です');
  const image=validateImage(x.image),answerImage=validateImage(x.answerImage);
- return {id:x.id,type:x.type==='grammar'?'grammar':'word',term:String(x.term),meaning:String(x.meaning),explanation:String(x.explanation||''),example:String(x.example||''),translation:String(x.translation||''),question:String(x.question||x.term+'について正しい説明は？'),options:x.options.map(a=>a.trim()),answer:+x.answer,...(image?{image}:{}),...(answerImage?{answerImage}:{})};
+ const answerText=String(x.answerText??x.meaning).trim();if(free&&!answerText)throw Error('正解例を入力してください');
+ return {id:x.id,type:x.type==='grammar'?'grammar':'word',term:String(x.term),meaning:String(x.meaning),explanation:String(x.explanation||''),example:String(x.example||''),translation:String(x.translation||''),question:String(x.question||(free?x.term:x.term+'について正しい説明は？')),...(free?{responseMode:'free',answerText}:{options:x.options.map(a=>a.trim()),answer:+x.answer}),...(image?{image}:{}),...(answerImage?{answerImage}:{})};
 }
 const timestamp=value=>Number.isFinite(value)&&value>0?value:null;
 function set(x){if(!x||!idOK(x.id)||!String(x.title||"").trim()||!Array.isArray(x.items))throw Error("セットにはtitleとitemsが必要です");const a=x.items.map(item);if(new Set(a.map(v=>v.id)).size!==a.length)throw Error("同一セット内に重複IDがあります");return{id:x.id,title:String(x.title),description:String(x.description||""),items:a,
@@ -752,7 +758,7 @@ function resetQuizView(){
  $("quizBody").innerHTML='<div class="flash muted">範囲を選んで「クイズ開始」を押してください。</div>';
 }
 function saveQuiz(){
- session().quiz={queue,current:quizCurrent,order:quizOrder,answered:quizAnswered,total:quizTotal,seen:[...firstSeen],wrong:[...wrongOnce],right:firstRight,scope:$("quizScope").value};return save();
+ session().quiz={queue,current:quizCurrent,order:quizOrder,answered:quizAnswered,total:quizTotal,seen:[...firstSeen],wrong:[...wrongOnce],right:firstRight,scope:$("quizScope").value,freeDraft,freeRevealed};return save();
 }
 function restoreQuiz(){
  quizRenderVersion++;$("startQuiz").disabled=false;$("quizScope").disabled=false;
@@ -760,7 +766,7 @@ function restoreQuiz(){
  if(!saved){resetQuizView();return}
  const ids=new Set(selected().items.map(x=>x.id));
  queue=saved.queue.filter(id=>ids.has(id));quizCurrent=saved.current;
- quizOrder=saved.order;quizAnswered=saved.answered;quizTotal=saved.total;
+ quizOrder=saved.order;quizAnswered=saved.answered;quizTotal=saved.total;freeDraft=saved.freeDraft||'';freeRevealed=!!saved.freeRevealed;
  firstSeen=new Set(saved.seen);wrongOnce=new Set(saved.wrong);firstRight=saved.right;
  $("quizScope").value=saved.scope;
  if(quizCurrent&&!ids.has(quizCurrent))return nextQuiz();
@@ -777,7 +783,7 @@ function startQuiz(){
 async function nextQuiz(){
  const version=++quizRenderVersion;
  $("quizBody").querySelectorAll("button").forEach(button=>button.disabled=true);
- quizCurrent=queue.shift()||null;quizOrder=[0,1,2,3].sort(()=>Math.random()-.5);quizAnswered=null;
+ quizCurrent=queue.shift()||null;quizOrder=[0,1,2,3].sort(()=>Math.random()-.5);quizAnswered=null;freeDraft='';freeRevealed=false;
  if(quizCurrent)firstSeen.add(quizCurrent);
  const setId=active;$("startQuiz").disabled=true;$("quizScope").disabled=true;await saveQuiz();if(version!==quizRenderVersion||active!==setId)return;$("startQuiz").disabled=false;$("quizScope").disabled=false;renderQuiz();
 }
@@ -797,21 +803,36 @@ function renderQuiz(){
  }
  firstSeen.add(id);
  const order=quizOrder;
- $("quizBody").innerHTML='<div class="flash" id="feedback" aria-live="polite"><strong>'+esc(x.question)+'</strong>'+imageMarkup(x.image,x.term)+'</div><div class="quiz-choices" id="quizAnswers">'+order.map(i=>'<button class="choice" data-answer="'+i+'">'+esc(x.options[i])+'</button>').join("")+'</div>';
- const choices=$("quizBody").querySelectorAll("[data-answer]");
- choices.forEach(b=>b.onclick=async()=>{
-  const setId=active,current=quizCurrent;
-  choices.forEach(choice=>choice.disabled=true);
-  const ok=+b.dataset.answer===x.answer;
-  if(ok&&!wrongOnce.has(x.id))firstRight++;
-  if(!ok){wrongOnce.add(x.id);queue.push(x.id)}
-  grade(x.id,ok?"good":"wrong",'quiz');
-  quizAnswered=ok;await saveQuiz();if(active===setId&&quizCurrent===current)renderQuizFeedback(x,ok);
- });
+ $("quizBody").innerHTML='<div class="flash" id="feedback" aria-live="polite"><strong>'+esc(x.question)+'</strong>'+imageMarkup(x.image,x.term)+'</div><div class="quiz-choices" id="quizAnswers">'+(x.responseMode==='free'?[]:order).map(i=>'<button class="choice" data-answer="'+i+'">'+esc(x.options[i])+'</button>').join("")+'</div>';
+ if(x.responseMode==='free'){
+ const answers=$("quizAnswers");answers.className='free-answer-form';
+ answers.innerHTML='<label for="freeAnswer">回答</label><textarea id="freeAnswer" rows="3" autocapitalize="off" spellcheck="false"></textarea><button id="revealFreeAnswer" class="primary">正解例を見る</button>';
+ $("freeAnswer").value=freeDraft;
+ $("freeAnswer").oninput=e=>{freeDraft=e.target.value;saveQuiz()};
+ $("revealFreeAnswer").onclick=async()=>{const setId=active,current=quizCurrent;freeRevealed=true;$("revealFreeAnswer").disabled=true;await saveQuiz();if(active===setId&&quizCurrent===current)renderFreeAnswer(x)};
+ if(freeRevealed)renderFreeAnswer(x);
+ }else $("quizBody").querySelectorAll('[data-answer]').forEach(button=>button.onclick=()=>answerQuiz(x,+button.dataset.answer===x.answer));
  if(quizAnswered!==null)renderQuizFeedback(x,quizAnswered);
 }
+function freeAnswerContent(x){
+ return (freeDraft?'<p class="detail">回答：'+esc(freeDraft)+'</p>':'')+'<p class="detail">'+esc(x.answerText)+'</p>'+imageMarkup(x.image,x.term)+imageMarkup(x.answerImage,x.meaning)+'<p class="detail">'+esc(x.explanation)+'</p>';
+}
+function renderFreeAnswer(x){
+ $("feedback").innerHTML='<strong>正解例</strong><div>'+freeAnswerContent(x)+'</div>';
+ $("quizAnswers").className='actions';$("quizAnswers").innerHTML='<button data-self-grade="wrong">不正解</button><button data-self-grade="good" class="primary">正解</button>';
+ $("quizAnswers").querySelectorAll('[data-self-grade]').forEach(button=>button.onclick=()=>answerQuiz(x,button.dataset.selfGrade==='good'));
+}
+async function answerQuiz(x,ok){
+ if(quizAnswered!==null)return;
+ const setId=active,current=quizCurrent;
+ $("quizAnswers").querySelectorAll('button,textarea').forEach(control=>control.disabled=true);
+ if(ok&&!wrongOnce.has(x.id))firstRight++;
+ if(!ok){wrongOnce.add(x.id);queue.push(x.id)}
+ grade(x.id,ok?'good':'wrong','quiz');quizAnswered=ok;
+ await saveQuiz();if(active===setId&&quizCurrent===current)renderQuizFeedback(x,ok);
+}
 function renderQuizFeedback(x,ok){
-  $("feedback").innerHTML='<strong>'+(ok?"正解":"不正解 — 後で再出題")+'</strong><div><p>正解：'+esc(x.options[x.answer])+'</p>'+imageMarkup(x.image,x.term)+imageMarkup(x.answerImage,x.meaning)+'<p class="detail">'+esc(x.explanation)+'</p></div>';
+  $("feedback").innerHTML='<strong>'+(ok?'正解':'不正解 — 後で再出題')+'</strong><div>'+(x.responseMode==='free'?freeAnswerContent(x):'<p>正解：'+esc(x.options[x.answer])+'</p>'+imageMarkup(x.image,x.term)+imageMarkup(x.answerImage,x.meaning)+'<p class="detail">'+esc(x.explanation)+'</p>')+'</div>';
   $("feedback").scrollTop=0;
   const answers=$("quizAnswers");
   answers.className="actions";
@@ -911,8 +932,14 @@ for(const [field,id]of [['image','iImage'],['answerImage','iAnswerImage']])$(id)
 };
 document.querySelectorAll('[data-remove-image]').forEach(button=>button.onclick=()=>{const field=button.dataset.removeImage;delete imageJobs[field];delete editingImages[field];updateImageEditor()});
 $("itemDialog").addEventListener('close',()=>{imageGeneration++;imageJobs={};editingImages={}});
-function showItem(id){$("itemMessage").hidden=true;editingItem=id||"";let x=selected()?.items.find(v=>v.id===id);imageGeneration++;imageJobs={};editingImages={image:x?.image||"",answerImage:x?.answerImage||""};for(const [field,value]of Object.entries({Term:x?.term||"",Meaning:x?.meaning||"",Explanation:x?.explanation||"",Example:x?.example||"",Translation:x?.translation||"",Question:x?.question||"",Options:x?.options.join("\n")||"",Answer:String(x?.answer||0)}))$("i"+field).value=value;$("itemDialog").showModal();updateImageEditor()}
-$("newItem").onclick=()=>showItem("");$("cancelItem").onclick=()=>$("itemDialog").close();$("itemForm").onsubmit=async e=>{e.preventDefault();if(Object.values(imageJobs).some(Boolean))return;const generation=imageGeneration;try{let x=item({id:editingItem||freshItemId(selected().items),type:selected().items.find(v=>v.id===editingItem)?.type||"word",...editingImages,term:$("iTerm").value,meaning:$("iMeaning").value,explanation:$("iExplanation").value,example:$("iExample").value,translation:$("iTranslation").value,question:$("iQuestion").value,options:$("iOptions").value.trim().split("\n"),answer:$("iAnswer").value});let s=selected();s.items=s.items.filter(a=>a.id!==editingItem);s.items.push(x);s.updatedAt=Date.now();const saved=await save();if(generation!==imageGeneration)return;if(!saved){$("itemMessage").textContent="保存に失敗しました";$("itemMessage").hidden=false;return}$("itemDialog").close();renderList()}catch(e){$("itemMessage").textContent=e.message;$("itemMessage").hidden=false;$("itemMessage").scrollIntoView({block:"nearest"})}};
+function updateResponseFields(){
+ const free=$("iResponseMode").value==='free';
+ $("choiceOptionsField").hidden=free;$("choiceAnswerField").hidden=free;$("freeAnswerField").hidden=!free;
+ $("iOptions").required=!free;$("iOptions").disabled=free;$("iAnswer").disabled=free;$("iAnswerText").required=free;$("iAnswerText").disabled=!free;
+}
+$("iResponseMode").onchange=updateResponseFields;
+function showItem(id){$("itemMessage").hidden=true;editingItem=id||"";let x=selected()?.items.find(v=>v.id===id);imageGeneration++;imageJobs={};editingImages={image:x?.image||"",answerImage:x?.answerImage||""};for(const [field,value]of Object.entries({Term:x?.term||"",Meaning:x?.meaning||"",Explanation:x?.explanation||"",Example:x?.example||"",Translation:x?.translation||"",Question:x?.question||"",ResponseMode:x?.responseMode||"choice",AnswerText:x?.answerText||x?.options?.[x.answer]||x?.meaning||"",Options:x?.options?.join("\n")||"",Answer:String(x?.answer||0)}))$("i"+field).value=value;$("itemDialog").showModal();updateResponseFields();updateImageEditor()}
+$("newItem").onclick=()=>showItem("");$("cancelItem").onclick=()=>$("itemDialog").close();$("itemForm").onsubmit=async e=>{e.preventDefault();if(Object.values(imageJobs).some(Boolean))return;const generation=imageGeneration;try{let x=item({id:editingItem||freshItemId(selected().items),type:selected().items.find(v=>v.id===editingItem)?.type||"word",...editingImages,responseMode:$("iResponseMode").value,answerText:$("iAnswerText").value,term:$("iTerm").value,meaning:$("iMeaning").value,explanation:$("iExplanation").value,example:$("iExample").value,translation:$("iTranslation").value,question:$("iQuestion").value,options:$("iOptions").value.trim().split("\n"),answer:$("iAnswer").value});let s=selected();s.items=s.items.filter(a=>a.id!==editingItem);s.items.push(x);s.updatedAt=Date.now();const saved=await save();if(generation!==imageGeneration)return;if(!saved){$("itemMessage").textContent="保存に失敗しました";$("itemMessage").hidden=false;return}$("itemDialog").close();renderList()}catch(e){$("itemMessage").textContent=e.message;$("itemMessage").hidden=false;$("itemMessage").scrollIntoView({block:"nearest"})}};
 $("items").onclick=async e=>{
  const b=e.target.closest('button');if(!b)return;
  if(b.dataset.explanation){showExplanation(b.dataset.explanation);return}
@@ -975,7 +1002,7 @@ const promptFormat=[
 "出力するJSONは、開始行を```json、終了行を```とするコードブロックで囲んでください。コードブロック内は厳密なJSONのみとし、コードブロックの前後に説明文を付けないでください。",
 'トップレベルは {"sets":[{"title":"セット名","description":"学習セットの説明文","items":[...]}]} としてください。',
 "各学習セットはtitle、description、itemsだけを含み、学習セットのIDや識別子は絶対に出力しないでください。セット・カードのIDはアプリが自動生成します。",
-"各items内のカードには term（表面）、meaning（裏面）、explanation（解説）、example（例）、translation（例の説明）、question（4択の問題）、options（文字列4個の配列）、answer（正解の0始まりの番号0〜3）を含めてください。",
+"各items内のカードには term（表面）、meaning（裏面）、explanation（解説）、example（例）、translation（例の説明）、question（問題文）を含めてください。選択式はoptions（文字列4個）とanswer（正解の0始まりの番号0〜3）、自由回答はresponseModeをfree、answerTextを正解例として含めてください。数学や記述問題には自由回答を使えます。",
 "カードにもIDや識別子を出力しないでください。内容に応じた自然な用語・概念を作り、正解は各問ちょうど1つにしてください。JSONとして構文が正しいことを確認してください。"
 ].join("\n");
 $("copyPrompt").onclick=async()=>{let t=$("topic").value.trim();if(!t){$("copyStatus").textContent="学習セットの内容を入力してください";return}try{const p="学習内容の要望:\n"+t+"\n\n"+promptFormat;if(navigator.clipboard&&window.isSecureContext)await navigator.clipboard.writeText(p);else{let temp=document.createElement("textarea");temp.value=p;document.body.append(temp);temp.select();if(!document.execCommand("copy"))throw Error("copy");temp.remove()}$("copyStatus").textContent="コピーしました"}catch(e){$("copyStatus").textContent="コピーに失敗しました"}};
