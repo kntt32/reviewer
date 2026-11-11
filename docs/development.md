@@ -4,15 +4,16 @@
 
 ## 構成とビルド
 
-- `src/reviewer.html`: HTML・CSS・JavaScriptのソース。外部ライブラリを使わず、ブラウザ標準APIで動作します。
+- `src/reviewer.html`: HTML・CSS・JavaScriptのソース。数式描画にKaTeXを埋め込み、それ以外はブラウザ標準APIで動作します。
 - `scripts/build.mjs`: アイコンとWeb App ManifestをデータURLとして埋め込み、`dist/reviewer.html` を生成します。
 - `tests/`: 同期処理の単体テストとブラウザの回帰テスト。
 - `reviewer-icon.svg` / `reviewer.webmanifest`: ビルド時に埋め込むアセット。
 - `.github/workflows/publish.yml`: テスト・ビルドと既存公開先への自動コピー。
 
-Node.js 24を使用します。ビルド・単体テストの依存パッケージはありません。
+Node.js 24を使用します。`npm ci` でビルド用の依存パッケージを復元します。
 
 ```bash
+npm ci
 npm test
 npm run build
 ```
@@ -128,3 +129,9 @@ PC・タブレット幅では左300pxの領域に、画面端から10px離した
 編集画面からの追加は元画像20MiB以内。Canvasで長辺1600px以内、256KiB以内のWebP（非対応時はJPEG）に縮小・圧縮します。GIFの追加は静止画になります。画像はカード一覧、単語カード、クイズ、解説に表示されます。
 
 保存時は画像をBlobとして分離し、メタデータと同じトランザクションで保存します。参照されなくなった画像は削除します。JSON書き出し時はBase64へ戻るため、画像IDの管理やZIPは不要です。保存失敗時はエラー・再試行・バックアップを表示し、移行失敗時に旧データを削除しません。
+
+## 数式
+
+KaTeXとauto-renderをビルド時に単一HTMLへ埋め込み、MathML出力をブラウザで描画します。CSSフォントや外部CDNは使用しません。問題・選択肢・正解例・解説・単語カード・ホームのカードに対応し、入力欄と保存JSONは元のTeX文字列を維持します。`$...$`、`$$...$$`、`\(...\)`、`\[...\]` に対応します。JSON内のバックスラッシュは二重にエスケープしてください。
+
+信頼されないTeXに対して `trust: false` と展開・サイズ制限を設定します。ライセンスは `THIRD_PARTY_NOTICES.md` と生成HTMLに同梱します。`tests/math.browser.cjs` で各画面の表示、外部取得なしの動作、HTMLが実行されないことを確認します。
