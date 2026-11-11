@@ -68,7 +68,6 @@ PC・タブレット・スマートフォンに対応し、端末設定に合わ
       "description": "語句と構文を少しずつ",
       "items": [
         {
-          "type": "grammar",
           "term": "provided that ...",
           "meaning": "〜という条件で、〜ならば",
           "explanation": "条件を表す接続表現。",

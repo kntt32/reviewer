@@ -47,7 +47,7 @@ kntt32/kntt-pages-dev の `tools/reviewer.html` から独立したアプリで�
 
 ## ウェブ教材の形式と同期
 
-推奨形式は `{ "sets": [{ "title": "...", "description": "...", "items": [...] }] }` です。`{ "items": [...] }` とカード配列も利用できます。カードの必須情報はterm、meaning、options（空でない文字列4個）、answer（0〜3）。type、question、explanation、example、translationも利用できます。
+推奨形式は `{ "sets": [{ "title": "...", "description": "...", "items": [...] }] }` です。`{ "items": [...] }` とカード配列も利用できます。カードの必須情報はterm、meaning、options（空でない文字列4個）、answer（0〜3）。question、explanation、example、translationも利用できます。旧教材のtypeは互換性のため受け付けますが、カードの種類による画面上の区別や種類選択はありません。
 
 履歴の識別にはセット・カードの `id` を優先し、省略時はセットのtitle・カードのtermを使います。同一配信元内のセット、同一セット内のカードではそれぞれ一意にしてください。title/termを変更しつつ履歴を引き継ぐ配信元は、最初から固定idを付けてください。
 
