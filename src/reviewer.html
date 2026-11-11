@@ -347,7 +347,7 @@ dialog[open]{display:flex;flex-direction:column}
 <div id="dashboardMetrics" class="dashboard-metrics" aria-label="学習の累計"></div>
 
 <section aria-labelledby="recommendationsTitle"><div class="dashboard-section-head"><h2 id="recommendationsTitle">おすすめの学習セット</h2></div><div id="dashboardRecommendations" class="dashboard-recommendations"></div></section>
-<section aria-labelledby="weakCardsTitle"><div class="dashboard-section-head"><h2 id="weakCardsTitle">苦手なカード</h2><span id="dashboardWeakCount" class="muted small"></span></div><div id="dashboardWeakCards" class="dashboard-weak-list"></div></section>
+<section aria-labelledby="weakCardsTitle"><div class="dashboard-section-head"><h2 id="weakCardsTitle">苦手なカード</h2></div><div id="dashboardWeakCards" class="dashboard-weak-list"></div></section>
 <footer class="dashboard-footer"><a class="github-link" href="https://github.com/kntt32/reviewer" target="_blank" rel="noopener noreferrer">github.com/kntt32/reviewer <span aria-hidden="true">↗</span></a></footer>
 </section>
 <section id="list" class="screen">
@@ -539,12 +539,11 @@ function dashboardData(sets,history,sessions,now=Date.now()){
  return {totals,recommendations:recommendations.slice(0,3),difficult:difficult.slice(0,6),weakTotal:difficult.length};
 }
 function renderDashboard(){
- const {totals,recommendations,difficult,weakTotal}=dashboardData(state.sets,state.progress,state.sessions||{});
+ const {totals,recommendations,difficult}=dashboardData(state.sets,state.progress,state.sessions||{});
  const number=n=>n.toLocaleString('ja-JP');
  const metrics=[['学習回数',totals.attempts,'回答・評価の累計'],['クイズ回答',totals.quiz,'回'],['カード評価',totals.cards,'回'],['学習したカード',totals.learned,'枚']];
  $("dashboardMetrics").innerHTML=metrics.map(([label,value,unit])=>'<div class="dashboard-metric"><span>'+label+'</span><strong>'+number(value)+'</strong><small>'+unit+'</small></div>').join('');
  $("dashboardRecommendations").innerHTML=recommendations.length?recommendations.map(({set,resume,reason})=>'<article class="dashboard-recommendation"><p class="dashboard-reason">'+esc(reason)+'</p><h3>'+esc(set.title)+'</h3><p class="muted small">'+set.items.length+'枚 · '+(set.sourceId?'ウェブ':'ローカル')+'</p><button data-dashboard-open="'+esc(set.id)+'" data-study-mode="'+(resume||'list')+'">'+(resume?'続きから':'セットを開く')+' <span aria-hidden="true">→</span></button></article>').join(''):'<div class="dashboard-empty"><p>まだ学習できるセットがありません。</p></div>';
- $("dashboardWeakCount").textContent=weakTotal?number(weakTotal)+'枚'+(weakTotal>6?' · 苦手の多い6枚を表示':''):'';
  $("dashboardWeakCards").innerHTML=difficult.length?difficult.map(({set,card,lapses})=>'<div class="dashboard-weak-card"><div><p class="muted small">'+esc(set.title)+'</p><h3>'+esc(card.term)+'</h3><p class="dashboard-meaning">'+esc(card.meaning)+'</p></div><div class="dashboard-weak-actions"><span class="muted small">'+(lapses?lapses+'回つまずき':'復習が必要')+'</span><button data-dashboard-explanation="'+esc(card.id)+'" data-set-id="'+esc(set.id)+'">解説を見る</button></div></div>').join(''):'<div class="dashboard-empty"><p>苦手なカードはまだありません。</p></div>';
 }
 $("sets").addEventListener('click',e=>{

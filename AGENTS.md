@@ -15,3 +15,5 @@
 - Keep card explanation/edit/delete actions as accessible icons on the right; explanations open a dedicated dialog.
 - Use small anchored HTML popovers for the section sort icon and per-set ellipsis menu. Keep edit forms and confirmations as dialogs.
 - Per-set sidebar menus may rename a remote set's local display label or dismiss that set on this device; preserve these choices across synchronization without modifying the source JSON or allowing remote card editing.
+
+- Keep UI copy to essential labels and actions. Do not add unsolicited explanatory captions, filler, or display-limit/count summaries.
