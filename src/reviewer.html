@@ -336,13 +336,13 @@ dialog[open]{display:flex;flex-direction:column}
 </section>
 </main></div></div>
 <dialog id="createDialog"><form id="createForm" class="modal-pane">
-<div class="modal-head"><h2>新しい学習セット</h2><button type="button" class="icon-btn" data-close-dialog="createDialog" aria-label="閉じる"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button></div>
+<h2>新しい学習セット</h2>
 
 <label>名前<input id="createTitle" required placeholder="セットの名前"></label>
 <label>説明<textarea id="createDesc" rows="3" placeholder="学習する内容や目的"></textarea></label>
 <div class="actions"><button id="cancelCreate" type="button">キャンセル</button><button class="primary" type="submit">作成する</button></div>
 </form></dialog>
-<dialog id="importDialog"><div class="modal-pane"><div class="modal-head"><h2>インポート</h2><button type="button" class="icon-btn" data-close-dialog="importDialog" aria-label="閉じる"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button></div>
+<dialog id="importDialog"><div class="modal-pane"><h2>インポート</h2>
 <p class="muted small">JSONを貼り付けるか、ファイルを選択してください。</p>
 <textarea id="jsonInput" rows="9" placeholder="JSONを貼り付け" spellcheck="false"></textarea>
 <div class="actions"><button id="importJson" class="primary">読み込む</button><button id="example">形式の例</button></div>
@@ -353,7 +353,7 @@ dialog[open]{display:flex;flex-direction:column}
 <textarea id="topic" rows="4" placeholder="例：高校化学の無機分野から20項目、解説と4択問題付きで"></textarea>
 <button id="copyPrompt"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 5h8a4 4 0 0 1 4 4v11a4 4 0 0 0-4-4H3zM15 9a4 4 0 0 1 4-4h2v11h-2a4 4 0 0 0-4 4"/></svg> AI用プロンプトをコピー</button><p id="copyStatus" class="muted small" role="status"></p>
 </div></dialog>
-<dialog id="exportDialog"><div class="modal-pane"><div class="modal-head"><h2>エクスポート</h2><button type="button" class="icon-btn" data-close-dialog="exportDialog" aria-label="閉じる"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button></div>
+<dialog id="exportDialog"><div class="modal-pane"><h2>エクスポート</h2>
 <p class="muted small">すべての学習セットを書き出します。</p>
 <button id="export" class="primary"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V4m-5 5 5-5 5 5M4 17v4h16v-4"/></svg> 教材JSONを書き出す</button>
 <button id="backup"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V4m-5 5 5-5 5 5M4 17v4h16v-4"/></svg> 学習履歴を含めて書き出す</button>
