@@ -281,6 +281,40 @@ dialog[open]{display:flex;flex-direction:column}
 @media(prefers-reduced-motion:reduce){.floating-menu{transition:none!important}}
 
 :root:not([data-keyboard="true"]) button:focus,:root:not([data-keyboard="true"]) a:focus,:root:not([data-keyboard="true"]) summary:focus{outline:none}
+
+/* Home dashboard, based entirely on saved learning history. */
+#sets.active.dashboard{display:flex;flex-direction:column;gap:28px;height:auto;min-height:100%;max-width:1100px;margin:0 auto;padding:12px 0 0}
+.dashboard-heading{display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap;margin-bottom:2px}
+.dashboard-eyebrow{font-size:.75rem;color:var(--muted);margin:0 0 8px}
+.dashboard-heading h1{font-size:clamp(1.6rem,3vw,2rem);font-weight:550;letter-spacing:-.03em}
+.dashboard-heading .muted{font-size:.85rem;margin:10px 0 0}
+.dashboard-heading>button{font-size:.8rem;min-height:36px;padding:8px 12px}
+.dashboard-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.dashboard-metric{display:flex;flex-direction:column;gap:10px;padding:18px;border:1px solid var(--line);border-radius:14px;min-width:0}
+.dashboard-metric>span{font-size:.76rem;color:var(--muted)}
+.dashboard-metric strong{font-size:clamp(1.7rem,3vw,2.2rem);line-height:1.2;font-weight:550;font-variant-numeric:tabular-nums}
+.dashboard-metric small{font-size:.67rem;color:var(--muted)}
+#dashboardHistoryNote{margin:-16px 0 0;font-size:.72rem;line-height:1.6}
+.dashboard-section-head{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+.dashboard-section-head h2{font-size:1rem;font-weight:550;margin:0}
+.dashboard-section-head>span{font-size:.72rem}
+.dashboard-recommendations{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,210px),1fr));gap:12px}
+.dashboard-recommendation{display:flex;flex-direction:column;align-items:flex-start;gap:12px;min-width:0;padding:18px;border:1px solid var(--line);border-radius:14px}
+.dashboard-recommendation p{margin:0;line-height:1.5}.dashboard-reason{font-size:.7rem;color:var(--muted)}
+.dashboard-recommendation h3{font-size:.98rem;font-weight:550;line-height:1.6;margin:0;overflow-wrap:anywhere}
+.dashboard-recommendation button{font-size:.78rem;min-height:34px;padding:7px 10px;margin-top:auto;display:flex;gap:16px;align-items:center}
+.dashboard-weak-list{border-top:1px solid var(--line)}
+.dashboard-weak-card{display:flex;justify-content:space-between;gap:20px;align-items:center;padding:16px 0;border-bottom:1px solid var(--line)}
+.dashboard-weak-card>div:first-child{min-width:0;overflow-wrap:anywhere}
+.dashboard-weak-card p{margin:0}.dashboard-weak-card h3{margin:6px 0;font-size:.95rem;font-weight:550;line-height:1.5}
+.dashboard-weak-card .small{font-size:.7rem}.dashboard-meaning{font-size:.85rem;line-height:1.6}
+.dashboard-weak-actions{display:grid;justify-items:end;gap:8px;flex-shrink:0}.dashboard-weak-actions button{font-size:.75rem;min-height:32px;padding:6px 10px}
+.dashboard-empty{padding:22px 18px;border:1px dashed var(--line);border-radius:14px;grid-column:1/-1}
+.dashboard-empty p{margin:0;font-size:.88rem;line-height:1.7}.dashboard-empty p+p{margin-top:5px;font-size:.78rem}
+.dashboard-footer{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;padding:12px 0 2px;margin-top:auto}
+.dashboard-footer .github-link{margin:0;font-size:.72rem}.dashboard-footer>span{font-size:.7rem}
+@media(max-width:1100px){.dashboard-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:500px){#sets.active.dashboard{gap:24px;padding-top:8px}.dashboard-heading{gap:14px}.dashboard-metrics{gap:8px}.dashboard-metric{padding:14px;gap:8px}.dashboard-weak-card{gap:10px}.dashboard-weak-actions button{font-size:.7rem;padding:6px 8px}.dashboard-footer{gap:12px;padding-bottom:12px}}
 </style></head><body>
 <div class="app-shell">
 <div class="sidebar-rail"><aside id="sidebar" aria-label="学習セットのサイドバー">
@@ -311,7 +345,14 @@ dialog[open]{display:flex;flex-direction:column}
 <div class="right-pane">
 <header class="workspace-header"><span id="workspaceToggleSlot"><button id="toggleSidebar" class="icon-btn" aria-label="サイドバーを切り替え" aria-controls="sidebar" aria-expanded="true"><svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M9 4v16"/></svg></button></span><span id="workspaceTitle">Reviewer</span></header>
 <main class="wrap" id="workspace">
-<section id="sets" class="screen active"><div class="welcome"><span class="tag">Reviewer</span><h1>今日は何を復習しますか？</h1><p class="muted">サイドバーから学習セットを選んで、<br>単語カードやクイズを始めましょう。</p><button id="browseSets">学習セットを選ぶ</button><a class="github-link" href="https://github.com/kntt32/reviewer" target="_blank" rel="noopener noreferrer">github.com/kntt32/reviewer <span aria-hidden="true">↗</span></a></div></section>
+<section id="sets" class="screen active dashboard" aria-labelledby="dashboardTitle">
+<div class="dashboard-heading"><div><p class="dashboard-eyebrow">ホーム</p><h1 id="dashboardTitle">学習の記録</h1><p class="muted">これまでの積み重ねと、次の復習。</p></div><button id="browseSets">学習セットを選ぶ</button></div>
+<div id="dashboardMetrics" class="dashboard-metrics" aria-label="学習の累計"></div>
+<p id="dashboardHistoryNote" class="muted small" hidden></p>
+<section aria-labelledby="recommendationsTitle"><div class="dashboard-section-head"><h2 id="recommendationsTitle">おすすめの学習セット</h2><span class="muted small">次の学習をここから</span></div><div id="dashboardRecommendations" class="dashboard-recommendations"></div></section>
+<section aria-labelledby="weakCardsTitle"><div class="dashboard-section-head"><h2 id="weakCardsTitle">苦手なカード</h2><span id="dashboardWeakCount" class="muted small"></span></div><div id="dashboardWeakCards" class="dashboard-weak-list"></div></section>
+<footer class="dashboard-footer"><span class="muted small">記録はこのブラウザに保存されます。</span><a class="github-link" href="https://github.com/kntt32/reviewer" target="_blank" rel="noopener noreferrer">github.com/kntt32/reviewer <span aria-hidden="true">↗</span></a></footer>
+</section>
 <section id="list" class="screen">
 <button class="back-link" id="back"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg> 学習セット</button>
 <div class="set-info"><h2 id="setTitle"></h2><p id="setDesc" class="muted"></p></div>
@@ -439,7 +480,7 @@ function filter(scope){
  if(!s)return [];
  return s.items.filter(x=>scope!=="weak"||weak(progress(s.id,x.id)));
 }
-function grade(id,result){let p={...progress(active,id)};p.attempts++;if(result==="wrong"){p.lapses++;p.reps=0;p.interval=1}else{p.correct++;p.reps=result==="good"?p.reps+1:Math.max(1,p.reps);const days=result==="good"?[1,3,7,14,30,60]:[1,3,7,14];p.interval=days[Math.min(days.length-1,p.reps-1)]}const now=Date.now();selected().lastStudiedAt=now;p.due=now+DAY*p.interval;state.progress[pkey(active,id)]=p;save();renderSets()}
+function grade(id,result,mode='cards'){let p={...progress(active,id)};p.attempts++;const counter=mode==='quiz'?'quizAttempts':'cardAttempts';p[counter]=(Number.isFinite(p[counter])?p[counter]:0)+1;if(result==="wrong"){p.lapses++;p.reps=0;p.interval=1}else{p.correct++;p.reps=result==="good"?p.reps+1:Math.max(1,p.reps);const days=result==="good"?[1,3,7,14,30,60]:[1,3,7,14];p.interval=days[Math.min(days.length-1,p.reps-1)]}const now=Date.now();selected().lastStudiedAt=now;p.due=now+DAY*p.interval;state.progress[pkey(active,id)]=p;save();renderSets()}
 
 function tab(name){
  if(name!=="sets"&&!selected())name="sets";
@@ -470,7 +511,56 @@ $("openQuiz").onclick=()=>tab("quiz");
 function open(s,which="list"){active=s;tab(which);if(mobileSidebar.matches)setSidebar(false)}
 
 
+function dashboardData(sets,history,sessions,now=Date.now()){
+ const count=n=>Number.isFinite(n)&&n>0?Math.floor(n):0;
+ const totals={attempts:0,quiz:0,cards:0,learned:0,legacy:0};
+ for(const p of Object.values(history)){
+ if(!p||typeof p!=='object')continue;
+ const attempts=count(p.attempts),quiz=Math.min(attempts,count(p.quizAttempts)),cards=Math.min(attempts-quiz,count(p.cardAttempts));
+ totals.attempts+=attempts;totals.quiz+=quiz;totals.cards+=cards;totals.legacy+=attempts-quiz-cards;
+ if(attempts)totals.learned++;
+ }
+ const difficult=[],recommendations=[];
+ for(const set of sets){
+ if(!set.items.length)continue;
+ let weakCount=0,due=0,unseen=0;
+ const ids=new Set(set.items.map(x=>x.id));
+ for(const card of set.items){
+ const p=history[set.id+'/'+card.id]||{};
+ if(weak(p)){weakCount++;difficult.push({set,card,lapses:count(p.lapses),accuracy:count(p.attempts)?count(p.correct)/count(p.attempts):0})}
+ if(!count(p.attempts))unseen++;
+ else if(Number.isFinite(p.due)&&p.due>0&&p.due<=now)due++;
+ }
+ const saved=sessions[set.id]||{};
+ const resume=saved.quiz&&(ids.has(saved.quiz.current)||saved.quiz.queue?.some(id=>ids.has(id)))?'quiz':saved.cards?.ids?.some(id=>ids.has(id))?'cards':null;
+ const priority=resume?0:weakCount?1:due?2:unseen?3:4;
+ const reason=resume?(resume==='quiz'?'途中のクイズがあります':'途中の単語カードがあります'):weakCount?weakCount+'枚の苦手なカードを復習':due?due+'枚が復習のタイミング':unseen?unseen+'枚が未学習':'もう一度振り返ってみましょう';
+ recommendations.push({set,resume,priority,reason,weakCount,due,unseen});
+ }
+ recommendations.sort((a,b)=>a.priority-b.priority||b.weakCount-a.weakCount||b.due-a.due||(a.set.lastStudiedAt||0)-(b.set.lastStudiedAt||0)||a.set.title.localeCompare(b.set.title,'ja'));
+ difficult.sort((a,b)=>b.lapses-a.lapses||a.accuracy-b.accuracy||a.card.term.localeCompare(b.card.term,'ja'));
+ return {totals,recommendations:recommendations.slice(0,3),difficult:difficult.slice(0,6),weakTotal:difficult.length};
+}
+function renderDashboard(){
+ const {totals,recommendations,difficult,weakTotal}=dashboardData(state.sets,state.progress,state.sessions||{});
+ const number=n=>n.toLocaleString('ja-JP');
+ const metrics=[['学習回数',totals.attempts,'回答・評価の累計'],['クイズ回答',totals.quiz,'回'],['カード評価',totals.cards,'回'],['学習したカード',totals.learned,'枚']];
+ $("dashboardMetrics").innerHTML=metrics.map(([label,value,unit])=>'<div class="dashboard-metric"><span>'+label+'</span><strong>'+number(value)+'</strong><small>'+unit+'</small></div>').join('');
+ $("dashboardHistoryNote").hidden=!totals.legacy;
+ $("dashboardHistoryNote").textContent='以前の履歴（'+number(totals.legacy)+'回）は合計のみ集計しています。';
+ $("dashboardRecommendations").innerHTML=recommendations.length?recommendations.map(({set,resume,reason})=>'<article class="dashboard-recommendation"><p class="dashboard-reason">'+esc(reason)+'</p><h3>'+esc(set.title)+'</h3><p class="muted small">'+set.items.length+'枚 · '+(set.sourceId?'ウェブ':'ローカル')+'</p><button data-dashboard-open="'+esc(set.id)+'" data-study-mode="'+(resume||'list')+'">'+(resume?'続きから':'セットを開く')+' <span aria-hidden="true">→</span></button></article>').join(''):'<div class="dashboard-empty"><p>まだ学習できるセットがありません。</p><p class="muted small">サイドバーからセットを作成・インポートして、カードを追加しましょう。</p></div>';
+ $("dashboardWeakCount").textContent=weakTotal?number(weakTotal)+'枚'+(weakTotal>6?' · 苦手の多い6枚を表示':''):'';
+ $("dashboardWeakCards").innerHTML=difficult.length?difficult.map(({set,card,lapses})=>'<div class="dashboard-weak-card"><div><p class="muted small">'+esc(set.title)+'</p><h3>'+esc(card.term)+'</h3><p class="dashboard-meaning">'+esc(card.meaning)+'</p></div><div class="dashboard-weak-actions"><span class="muted small">'+(lapses?lapses+'回つまずき':'復習が必要')+'</span><button data-dashboard-explanation="'+esc(card.id)+'" data-set-id="'+esc(set.id)+'">解説を見る</button></div></div>').join(''):'<div class="dashboard-empty"><p>苦手なカードはまだありません。</p><p class="muted small">学習中につまずいたカードが、ここにまとまります。</p></div>';
+}
+$("sets").addEventListener('click',e=>{
+ const start=e.target.closest('[data-dashboard-open]');
+ if(start){open(start.dataset.dashboardOpen,start.dataset.studyMode);return}
+ const explanation=e.target.closest('[data-dashboard-explanation]');
+ if(explanation){open(explanation.dataset.setId);showExplanation(explanation.dataset.dashboardExplanation)}
+});
+
 function renderSets(){
+ renderDashboard();
  renderSources();
  const q=$("setSearch").value.trim().toLocaleLowerCase();
  const visible=state.sets.filter(s=>!s.sourceId).filter(s=>[s.title,s.description,s.id].some(t=>t.toLocaleLowerCase().includes(q)));
@@ -593,7 +683,7 @@ function renderQuiz(){
   const ok=+b.dataset.answer===x.answer;
   if(ok&&!wrongOnce.has(x.id))firstRight++;
   if(!ok){wrongOnce.add(x.id);queue.push(x.id)}
-  grade(x.id,ok?"good":"wrong");
+  grade(x.id,ok?"good":"wrong",'quiz');
   quizAnswered=ok;saveQuiz();renderQuizFeedback(x,ok);
  });
  if(quizAnswered!==null)renderQuizFeedback(x,quizAnswered);
