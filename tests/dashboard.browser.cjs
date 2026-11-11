@@ -13,7 +13,7 @@ for(const viewport of [{width:1440,height:1000},{width:390,height:844}]){
  const card=id=>({id,term:id,meaning:'meaning',explanation:'Example explanation',options:['a','b','c','d'],answer:0});
  localStorage.setItem('kntt.reviewer.v2',JSON.stringify({sets:[{id:'s',title:'English',items:['c0','c1','c2'].map(card)},{id:'new',title:'New subject',items:[card('new')]}],progress:{'s/c0':{attempts:2,correct:1,lapses:1,quizAttempts:1,cardAttempts:1,due:1000},'s/c1':{attempts:3,correct:3,lapses:0,due:Date.now()+86400000}},sessions:{s:{quiz:{current:'c0',queue:['c1','c2'],order:[0,1,2,3],answered:null,total:3,seen:['c0'],wrong:[],right:0,scope:'all'}}}}));
  });
- await page.reload();assert.deepEqual(await page.locator('.dashboard-metric strong').allTextContents(),['5','1','1','2']);assert.match(await page.locator('#dashboardHistoryNote').innerText(),/3回/);
+ await page.reload();assert.deepEqual(await page.locator('.dashboard-metric strong').allTextContents(),['5','1','1','2']);assert.equal(await page.locator('#dashboardHistoryNote').count(),0);
  assert.equal(await page.locator('.dashboard-recommendation h3').first().innerText(),'English');assert.equal(await page.locator('.dashboard-weak-card').count(),1);
  assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);
  await page.locator('[data-dashboard-open="s"]').click();await page.locator('#quiz.active').waitFor();await page.locator('[data-answer="0"]').click();
@@ -25,7 +25,7 @@ for(const viewport of [{width:1440,height:1000},{width:390,height:844}]){
  await page.locator('#openCards').click();await page.locator('#flip').click();await page.locator('[data-grade="good"]').click();await page.locator('#cards [data-detail-back]').click();
  await sidebar();await page.locator('#homeLink').click();assert.deepEqual(await page.locator('.dashboard-metric strong').allTextContents(),['7','2','2','2']);
  await page.locator('#showExport').click();await page.locator('#reset').click();await page.locator('#confirmAccept').click();await page.locator('#exportDialog .dialog-footer button').click();
- assert.deepEqual(await page.locator('.dashboard-metric strong').allTextContents(),['0','0','0','0']);assert.equal(await page.locator('#dashboardHistoryNote').isVisible(),false);assert.equal(await page.locator('.dashboard-weak-card').count(),0);
+ assert.deepEqual(await page.locator('.dashboard-metric strong').allTextContents(),['0','0','0','0']);assert.equal(await page.locator('#dashboardHistoryNote').count(),0);assert.equal(await page.locator('.dashboard-weak-card').count(),0);
  await page.reload();assert.deepEqual(await page.locator('.dashboard-metric strong').allTextContents(),['0','0','0','0']);assert.deepEqual(errors,[]);
  console.log('PASS dashboard totals, legacy history, resume recommendation, weak-card explanation, grading counters and reset:',viewport.width);await page.close();
 }
