@@ -2,7 +2,7 @@ import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import vm from 'node:vm';
-const source=readFileSync(new URL('../src/reviewer.html',import.meta.url),'utf8');
+const source=readFileSync(new URL('../src/reviewer.js',import.meta.url),'utf8');
 const fn=source.slice(source.indexOf('function dashboardData('),source.indexOf('function renderDashboard('));
 function data(sets,history={},sessions={}){
  const context={sets,history,sessions,weak:p=>p.lapses>0||(p.attempts>1&&p.correct/p.attempts<.8)};

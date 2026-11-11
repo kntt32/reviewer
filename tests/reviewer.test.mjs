@@ -3,8 +3,7 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import vm from 'node:vm';
 import {webcrypto} from 'node:crypto';
-const html=readFileSync(new URL('../src/reviewer.html',import.meta.url),'utf8');
-const script=html.match(/<script>([\s\S]*)<\/script>/)[1];
+const script=readFileSync(new URL('../src/reviewer.js',import.meta.url),'utf8');
 function harness(){
  const start=script.indexOf('function remoteInputs'),end=script.indexOf('async function syncSource');
  const core=script.slice(script.indexOf('const idOK='),script.indexOf('function save()'));

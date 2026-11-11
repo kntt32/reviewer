@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import vm from 'node:vm';
 import {webcrypto} from 'node:crypto';
-const source=readFileSync(new URL('../src/reviewer.html',import.meta.url),'utf8');
+const source=readFileSync(new URL('../src/reviewer.js',import.meta.url),'utf8');
 const context={atob,Blob,crypto:webcrypto};vm.createContext(context);
 vm.runInContext(source.slice(source.indexOf('const idOK='),source.indexOf('function save()'))+'\nglobalThis.parseCard=item',context);
 const png='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jFwoAAAAASUVORK5CYII=';

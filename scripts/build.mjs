@@ -1,5 +1,7 @@
 import {readFile,writeFile,mkdir} from 'node:fs/promises';
 const source=await readFile(new URL('../src/reviewer.html',import.meta.url),'utf8');
+const css=await readFile(new URL('../src/reviewer.css',import.meta.url),'utf8');
+const app=await readFile(new URL('../src/reviewer.js',import.meta.url),'utf8');
 const icon=await readFile(new URL('../reviewer-icon.svg',import.meta.url));
 const manifest=JSON.parse(await readFile(new URL('../reviewer.webmanifest',import.meta.url),'utf8'));
 const iconUrl='data:image/svg+xml;base64,'+icon.toString('base64');
@@ -9,6 +11,7 @@ const katex=await readFile(new URL('../node_modules/katex/dist/katex.min.js',imp
 const autoRender=await readFile(new URL('../node_modules/katex/dist/contrib/auto-render.min.js',import.meta.url),'utf8');
 const license=await readFile(new URL('../node_modules/katex/LICENSE',import.meta.url),'utf8');
 const safeScript=script=>script.replace(/<\/script/gi,'<\\/script');
+html=html.replace('<link rel="stylesheet" href="./reviewer.css">',()=>'<style>'+css+'</style>').replace('<script src="./reviewer.js"></script>',()=>'<script>'+safeScript(app)+'</script>');
 html=html.replace('<!-- MATH_RUNTIME -->',()=>'<!-- KaTeX license\n'+license+'\n--><script>'+safeScript(katex)+'\n'+safeScript(autoRender)+'</script>');
 await mkdir(new URL('../dist/',import.meta.url),{recursive:true});
 await writeFile(new URL('../dist/reviewer.html',import.meta.url),html);

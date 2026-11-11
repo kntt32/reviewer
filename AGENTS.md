@@ -3,7 +3,7 @@
 - Commit using the acting agent's name (for example, `codex`) and a corresponding author identity.
 - Preserve existing Japanese UI, flashcards, quizzes, import/export, and learning history.
 - Migrate legacy localStorage key `kntt.reviewer.v2` into IndexedDB atomically. Preserve sets, IDs, history and sessions; remove the legacy value only after a successful commit.
-- Edit `src/reviewer.html`; install build dependencies with `npm ci`, then run `npm test` and `npm run build` before committing.
+- Edit `src/reviewer.html` for markup, `src/reviewer.css` for styles, and `src/reviewer.js` for application logic; install build dependencies with `npm ci`, then run `npm test` and `npm run build` before committing.
 - `dist/reviewer.html` must be a standalone HTML with scripts, CSS, icon and manifest embedded. Do not add runtime CDN dependencies.
 - Treat downloaded JSON as untrusted. Validate all sets before replacing cached data; escape content before inserting HTML.
 - Remote sync must preserve progress for stable set/card identities, retain cached content on failure, and never overwrite local sets.
