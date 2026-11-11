@@ -12,7 +12,7 @@
   <a href="https://github.com/kntt32/reviewer/actions/workflows/publish.yml"><img src="https://github.com/kntt32/reviewer/actions/workflows/publish.yml/badge.svg" alt="Deploy の実行状態"></a>
   <a href="LICENSE"><img src="https://img.shields.io/github/license/kntt32/reviewer" alt="ライセンス: MIT"></a>
   <a href="docs/development.md"><img src="https://img.shields.io/badge/Node.js-24-5FA04E?logo=nodedotjs&amp;logoColor=white" alt="ビルド環境: Node.js 24"></a>
-  <a href="src/reviewer.html"><img src="https://img.shields.io/badge/JavaScript-Vanilla-F7DF1E?logo=javascript&amp;logoColor=black" alt="Vanilla JavaScript"></a>
+  <a href="src/reviewer.js"><img src="https://img.shields.io/badge/JavaScript-Vanilla-F7DF1E?logo=javascript&amp;logoColor=black" alt="Vanilla JavaScript"></a>
   <a href="docs/development.md"><img src="https://img.shields.io/badge/build-single_HTML-555555?logo=html5&amp;logoColor=white" alt="単一HTMLビルド"></a>
 </p>
 
@@ -115,7 +115,7 @@ npm test
 npm run build
 ```
 
-`src/reviewer.html` を編集し、ビルドで `dist/reviewer.html` を生成します。CSS・JavaScript・アイコン・Web App Manifestを1つのHTMLにまとめます。
+`src/reviewer.html`（構造）、`src/reviewer.css`（見た目）、`src/reviewer.js`（動作）に分けて編集し、ビルドで `dist/reviewer.html` を生成します。CSS・JavaScript・アイコン・Web App Manifestを1つのHTMLにまとめます。
 
 詳しい構成、ブラウザテスト、教材形式、自動配信の設定は[開発ガイド](docs/development.md)を参照してください。
 

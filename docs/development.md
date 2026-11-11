@@ -4,8 +4,10 @@
 
 ## 構成とビルド
 
-- `src/reviewer.html`: HTML・CSS・JavaScriptのソース。数式描画にKaTeXを埋め込み、それ以外はブラウザ標準APIで動作します。
-- `scripts/build.mjs`: アイコンとWeb App ManifestをデータURLとして埋め込み、`dist/reviewer.html` を生成します。
+- `src/reviewer.html`: 画面構造。
+- `src/reviewer.css`: スタイル。
+- `src/reviewer.js`: アプリの動作。数式描画にKaTeXを埋め込み、それ以外はブラウザ標準APIで動作します。
+- `scripts/build.mjs`: CSS・JavaScriptとKaTeXをインライン化し、アイコンとWeb App ManifestをデータURLとして埋め込み、`dist/reviewer.html` を生成します。
 - `tests/`: 同期処理の単体テストとブラウザの回帰テスト。
 - `reviewer-icon.svg` / `reviewer.webmanifest`: ビルド時に埋め込むアセット。
 - `.github/workflows/publish.yml`: テスト・ビルドと既存公開先への自動コピー。
