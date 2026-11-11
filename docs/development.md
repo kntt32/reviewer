@@ -33,13 +33,16 @@ node tests/popovers.browser.cjs
 node tests/input-feedback.browser.cjs
 node tests/dashboard.browser.cjs
 node tests/home-card-navigation.browser.cjs
+node tests/images.browser.cjs
+node tests/image-sync.browser.cjs
+node tests/storage.browser.cjs
 ```
 
 途中再開・二重採点の防止、PC／タブレット／スマートフォン幅でのレイアウト、検索、教材切り替え、並び替え、折りたたみ、開閉ボタンの移動、サイドバーのアニメーションを確認します。動きを減らす設定と通常のアニメーションをそれぞれテストします。
 
 ## 保存データとの互換性
 
-kntt32/kntt-pages-dev の `tools/reviewer.html` から独立したアプリです。教材・履歴・学習セッションの保存先は、既存の `kntt.reviewer.v2` を維持しています。同じオリジンの同じブラウザなら、以前のローカル教材を読み込めます。
+kntt32/kntt-pages-dev の `tools/reviewer.html` から独立したアプリです。教材・履歴・学習セッションはIndexedDBの `kntt.reviewer` データベースに保存します。旧localStorageキー `kntt.reviewer.v2` は、IndexedDBにデータがない場合に移行し、保存成功後にだけ削除します。ID・履歴・セッションは維持します。画像Blobは別の `images` ストアでSHA-256により重複排除し、通常の学習では画像本体を書き直しません。
 
 並び順は `kntt.reviewer.set-sort`、サイドバーの表示設定は `kntt.reviewer.sidebar.v1` に保存します。端末間の自動同期は実装していません。
 
@@ -117,3 +120,11 @@ PC・タブレット幅では左300pxの領域に、画面端から10px離した
 4. Actionsの **Deploy → Run workflow** から動作を確認する。
 
 宛先checkoutは `ref: main` と `token: ${{ secrets.PAGES_DEPLOY_KEY }}` を指定し、HTTPSで取得・更新します。Reviewer自身のcheckoutには通常の `GITHUB_TOKEN` を使います。PATは有効期限に合わせて更新してください。宛先ブランチの保護規則が直接pushを禁止する場合は、PR経由の運用へ調整してください。
+
+## 画像
+
+カードの任意フィールド `image` と `answerImage` は、それぞれ表面と裏面の画像を表すBase64データURLです。PNG・JPEG・WebP・GIF・AVIFを受け付け、SVGや外部画像URLは受け付けません。取り込むデータURLは1画像560万文字以内です。
+
+編集画面からの追加は元画像20MiB以内。Canvasで長辺1600px以内、256KiB以内のWebP（非対応時はJPEG）に縮小・圧縮します。GIFの追加は静止画になります。画像はカード一覧、単語カード、クイズ、解説に表示されます。
+
+保存時は画像をBlobとして分離し、メタデータと同じトランザクションで保存します。参照されなくなった画像は削除します。JSON書き出し時はBase64へ戻るため、画像IDの管理やZIPは不要です。保存失敗時はエラー・再試行・バックアップを表示し、移行失敗時に旧データを削除しません。
