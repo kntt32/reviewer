@@ -325,6 +325,10 @@ dialog[open]{display:flex;flex-direction:column}
 .free-answer-form{display:grid;gap:8px;min-height:0}.free-answer-form label{font-size:.8rem;color:var(--muted)}
 .free-answer-form textarea{min-height:64px;max-height:22dvh;resize:vertical;font-size:1rem}
 .free-answer-form button{min-height:42px}
+
+.katex:has(math[display="block"]),.katex-display{display:block;margin:12px 0;max-width:100%;overflow-x:auto;overflow-y:hidden}
+.katex math{font-size:1.12em;white-space:normal}.katex-display math{display:block}
+.flash .katex-display{width:100%}.detail .katex-display{white-space:normal}
 </style></head><body>
 <div class="app-shell">
 <div class="sidebar-rail"><aside id="sidebar" aria-label="学習セットのサイドバー">
@@ -422,6 +426,7 @@ dialog[open]{display:flex;flex-direction:column}
 <div id="setActionsPopover" popover="auto" class="floating-menu" aria-labelledby="setActionsTitle"><h2 id="setActionsTitle" class="menu-heading"></h2><p id="setActionsHint" class="muted small" hidden>名前変更と削除はこの端末内に適用します。</p><div class="set-menu-actions" role="menu" aria-labelledby="setActionsTitle"><button type="button" id="renameSetAction" role="menuitem">名前変更</button><button type="button" id="exportSetAction" role="menuitem">このセットをエクスポート</button><button type="button" id="deleteSetAction" class="danger" role="menuitem">削除</button></div></div>
 <dialog id="renameDialog" aria-labelledby="renameTitle"><form id="renameForm" class="dialog-layout"><div class="dialog-head"><h2 id="renameTitle">名前変更</h2></div><div class="dialog-body"><label>名前<input id="renameInput" required maxlength="200"></label></div><div class="dialog-footer actions"><button type="button" data-close-dialog="renameDialog">キャンセル</button><button type="submit" class="primary">保存</button></div></form></dialog>
 <div id="storageStatus" role="alert" hidden><span id="storageMessage"></span><button type="button" id="storageRetry">再試行</button><button type="button" id="storageBackup">バックアップ</button></div>
+<!-- MATH_RUNTIME -->
 <script>
 (async()=>{
 "use strict";
@@ -436,6 +441,22 @@ document.addEventListener('click',e=>{if(e.detail>0)pointerInteraction()},true);
 document.addEventListener('keydown',()=>{inputRoot.dataset.keyboard='true'},true);
 let quizCurrent=null,quizOrder=[],quizAnswered=null,freeDraft='',freeRevealed=false;
 let state={sets:[],progress:{}},active="",editingSet="",editingItem="",deck=[],pos=0,reveal=false,queue=[],firstSeen=new Set(),wrongOnce=new Set(),firstRight=0,quizTotal=0;
+const mathRoots=new Set();let mathPending=false;
+function typesetMath(root){
+ if(!globalThis.renderMathInElement)return;
+ renderMathInElement(root,{
+ delimiters:[{left:'$$',right:'$$',display:true},{left:'\\[',right:'\\]',display:true},{left:'\\(',right:'\\)',display:false},{left:'$',right:'$',display:false}],
+ output:'mathml',throwOnError:false,trust:false,strict:'ignore',maxExpand:1000,maxSize:20,
+ ignoredTags:['script','noscript','style','textarea','pre','code','option','input'],ignoredClasses:['katex'],errorCallback:()=>{}
+ });
+}
+function scheduleMath(root){
+ mathRoots.add(root);if(mathPending)return;mathPending=true;
+ queueMicrotask(()=>{mathPending=false;const roots=[...mathRoots];mathRoots.clear();for(const root of roots)typesetMath(root)});
+}
+for(const id of ['items','flash','quizBody','explanationDialog','dashboardWeakCards','dashboardRecommendations']){
+ const root=$(id);new MutationObserver(()=>scheduleMath(root)).observe(root,{childList:true,characterData:true,subtree:true});
+}
 const idOK=x=>typeof x==="string"&&/^[A-Za-z0-9._-]{1,100}$/.test(x);
 const IMAGE_FIELDS=['image','answerImage'];
 function validateImage(value){
