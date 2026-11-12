@@ -402,7 +402,7 @@ function renderQuiz(){
  answers.innerHTML='<label for="freeAnswer">回答</label><textarea id="freeAnswer" rows="3" autocapitalize="off" spellcheck="false"></textarea><button id="revealFreeAnswer" class="primary">正解例を見る</button>';
  $("freeAnswer").value=freeDraft;
  $("freeAnswer").oninput=e=>{freeDraft=e.target.value;saveQuiz()};
- $("revealFreeAnswer").onclick=async()=>{const setId=active,current=quizCurrent;freeRevealed=true;$("revealFreeAnswer").disabled=true;await saveQuiz();if(active===setId&&quizCurrent===current)renderFreeAnswer(x)};
+ $("revealFreeAnswer").onclick=async()=>{const setId=active,current=quizCurrent,version=quizRenderVersion;freeRevealed=true;$("revealFreeAnswer").disabled=true;await saveQuiz();if(active===setId&&quizCurrent===current&&version===quizRenderVersion)renderFreeAnswer(x)};
  if(freeRevealed)renderFreeAnswer(x);
  }else $("quizBody").querySelectorAll('[data-answer]').forEach(button=>button.onclick=()=>answerQuiz(x,+button.dataset.answer===x.answer));
  if(quizAnswered!==null)renderQuizFeedback(x,quizAnswered);
@@ -417,13 +417,13 @@ function renderFreeAnswer(x){
 }
 async function answerQuiz(x,ok){
  if(quizAnswered!==null)return;
- const setId=active,current=quizCurrent;
+ const setId=active,current=quizCurrent,version=quizRenderVersion;
  $("quizAnswers").querySelectorAll('button,textarea').forEach(control=>control.disabled=true);
  if(ok&&!wrongOnce.has(x.id))firstRight++;
  if(!ok){wrongOnce.add(x.id);queue.push(x.id)}
  grade(x.id,ok?'good':'wrong','quiz');quizAnswered=ok;
  if(x.responseMode==='free'){await nextQuiz();return}
- await saveQuiz();if(active===setId&&quizCurrent===current)renderQuizFeedback(x,ok);
+ await saveQuiz();if(active===setId&&quizCurrent===current&&version===quizRenderVersion)renderQuizFeedback(x,ok);
 }
 function renderQuizFeedback(x,ok){
   $("feedback").innerHTML='<strong>'+(ok?'正解':'不正解 — 後で再出題')+'</strong><div>'+(x.responseMode==='free'?freeAnswerContent(x):'<p>正解：'+esc(x.options[x.answer])+'</p>'+imageMarkup(x.image,x.term)+imageMarkup(x.answerImage,x.meaning)+'<p class="detail">'+esc(x.explanation)+'</p>')+'</div>';
