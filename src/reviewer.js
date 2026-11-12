@@ -362,6 +362,7 @@ function restoreQuiz(){
  firstSeen=new Set(saved.seen);wrongOnce=new Set(saved.wrong);firstRight=saved.right;
  $("quizScope").value=saved.scope;
  if(quizCurrent&&!ids.has(quizCurrent))return nextQuiz();
+ if(quizAnswered!==null&&selected().items.find(x=>x.id===quizCurrent)?.responseMode==='free')return nextQuiz();
  renderQuiz();
 }
 function startQuiz(){
@@ -421,6 +422,7 @@ async function answerQuiz(x,ok){
  if(ok&&!wrongOnce.has(x.id))firstRight++;
  if(!ok){wrongOnce.add(x.id);queue.push(x.id)}
  grade(x.id,ok?'good':'wrong','quiz');quizAnswered=ok;
+ if(x.responseMode==='free'){await nextQuiz();return}
  await saveQuiz();if(active===setId&&quizCurrent===current)renderQuizFeedback(x,ok);
 }
 function renderQuizFeedback(x,ok){
