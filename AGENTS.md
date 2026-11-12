@@ -18,3 +18,5 @@
 - Per-set sidebar menus may rename a remote set's local display label or dismiss that set on this device; preserve these choices across synchronization without modifying the source JSON or allowing remote card editing.
 
 - Keep UI copy to essential labels and actions. Do not add unsolicited explanatory captions, filler, or display-limit/count summaries.
+
+- README is a public product introduction: keep the icon, badges, screenshots, concise features and entry link. Do not append license sections, math syntax, JSON schemas, storage explanations or build instructions; put technical details in docs/development.md.
