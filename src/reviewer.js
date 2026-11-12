@@ -808,6 +808,41 @@ function reconcile(source,raw){
  });
  state.sets=state.sets.filter(s=>s.sourceId!==source.id).concat(incoming.filter(s=>!(source.dismissedKeys||[]).includes(s.remoteKey)));
 }
+function sameSyncedCard(a,b){
+ if(!a||!b)return a===b;
+ return ['term','meaning','question','responseMode','answer','answerText','image','answerImage'].every(key=>a[key]===b[key])&&JSON.stringify(a.options)===JSON.stringify(b.options);
+}
+async function refreshSyncedStudy(previous){
+ if(!previous)return;
+ const current=state.sets.find(set=>set.id===previous.id);
+ if(!current){if(active===previous.id){active='';await tab('sets')}return}
+ const saved=state.sessions?.[current.id],ids=new Set(current.items.map(card=>card.id)),oldIds=new Set(previous.items.map(card=>card.id));
+ const added=current.items.filter(card=>!oldIds.has(card.id)).map(card=>card.id);
+ if(saved?.cards){
+ const cardId=saved.cards.ids[saved.cards.pos];
+ saved.cards.ids=saved.cards.ids.filter(id=>ids.has(id));
+ if(saved.cards.scope==='all')saved.cards.ids.push(...added);
+ saved.cards.pos=Math.max(0,saved.cards.ids.indexOf(cardId));
+ if(!ids.has(cardId))saved.cards.reveal=false;
+ }
+ if(saved?.quiz){
+ const quiz=saved.quiz;
+ quiz.queue=quiz.queue.filter(id=>ids.has(id));quiz.seen=quiz.seen.filter(id=>ids.has(id));quiz.wrong=quiz.wrong.filter(id=>ids.has(id));
+ if(quiz.scope==='all')quiz.queue.push(...added.filter(id=>id!==quiz.current&&!quiz.queue.includes(id)));
+ if(!quiz.current&&quiz.queue.length){quiz.current=quiz.queue.shift();quiz.answered=null;quiz.freeDraft='';quiz.freeRevealed=false;if(!quiz.seen.includes(quiz.current))quiz.seen.push(quiz.current)}
+ const oldCard=previous.items.find(card=>card.id===quiz.current),newCard=current.items.find(card=>card.id===quiz.current);
+ if(newCard&&!sameSyncedCard(oldCard,newCard)){
+ quiz.answered=null;quiz.freeDraft='';quiz.freeRevealed=false;quiz.wrong=quiz.wrong.filter(id=>id!==quiz.current);quiz.queue=quiz.queue.filter(id=>id!==quiz.current);
+ }
+ quiz.total=new Set([...quiz.seen,...quiz.queue,...(ids.has(quiz.current)?[quiz.current]:[])]).size;
+ quiz.right=quiz.seen.filter(id=>!quiz.wrong.includes(id)&&(id!==quiz.current||quiz.answered===true)).length;
+ }
+ if(active!==current.id)return;
+ updateSetHeading(current);
+ if($('list').classList.contains('active'))renderList();
+ if($('cards').classList.contains('active'))await buildCards();
+ if($('quiz').classList.contains('active'))await restoreQuiz();
+}
 async function syncSource(source){
  if(syncing.has(source.id))return;
  syncing.add(source.id);renderSources();
@@ -817,8 +852,10 @@ async function syncSource(source){
  const raw=await response.json();
  if(!(state.sources||[]).includes(source))return;
  // Validate the entire response before replacing cached content or mappings.
+ const previous=state.sets.filter(set=>set.sourceId===source.id);
  const draft={...source,cardIds:{...source.cardIds}};
  reconcile(draft,raw);source.cardIds=draft.cardIds;source.syncedAt=Date.now();source.error='';
+ for(const set of previous)await refreshSyncedStudy(set);
  }catch(e){source.error='同期失敗: '+e.message+'（保存済みの教材を利用できます）'}
  finally{syncing.delete(source.id);save();renderSets()}
 }
