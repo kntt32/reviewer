@@ -2,43 +2,18 @@ import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import vm from 'node:vm';
-import {webcrypto} from 'node:crypto';
 const script=readFileSync(new URL('../src/reviewer.js',import.meta.url),'utf8');
-function harness(){
- const start=script.indexOf('function remoteInputs'),end=script.indexOf('async function syncSource');
- const core=script.slice(script.indexOf('const idOK='),script.indexOf('function save()'));
- const context={crypto:webcrypto,state:{sets:[],progress:{}},DAY:86400000};
- vm.createContext(context);
- vm.runInContext(core+'\n'+script.slice(start,end)+'\nglobalThis.reconcile=reconcile;',context);
- return context;
-}
-const card={term:'hello',meaning:'こんにちは',options:['a','b','c','d'],answer:0};
-test('remote update preserves identities and progress; invalid update is atomic',()=>{
- const c=harness(),source={id:'remote',cardIds:{}};
- c.state.sets=[{id:'local',items:[]}];
- c.reconcile(source,{sets:[{title:'English',items:[card]}]});
- const before=c.state.sets[1],id=before.items[0].id;
- c.state.progress[before.id+'/'+id]={attempts:3};
- c.reconcile(source,{sets:[{title:'English',items:[{...card,meaning:'更新'}]}]});
- assert.equal(c.state.sets[1].id,before.id);assert.equal(c.state.sets[1].items[0].id,id);
- assert.equal(c.state.progress[before.id+'/'+id].attempts,3);
- assert.throws(()=>c.reconcile(source,{sets:[{title:'English',items:[{...card,options:[]}]}]}));
- assert.equal(c.state.sets[1].items[0].meaning,'更新');assert.equal(c.state.sets[0].id,'local');
+const context=vm.createContext({});
+vm.runInContext(script.slice(script.indexOf('function removeSyncedData('),script.indexOf('async function load()')),context);
+test('removes synced sets, sources, history and sessions while retaining local copies',()=>{
+ const local={id:'local',items:[]},copy={id:'copy',items:[]};
+ const data={sets:[local,{id:'remote',sourceId:'feed',items:[]},copy],sources:[{id:'feed'}],progress:{'remote/c':{attempts:4},'local/c':{attempts:2}},sessions:{remote:{},local:{}},view:{setId:'remote',screen:'quiz'}};
+ assert.equal(context.removeSyncedData(data),true);
+ assert.deepEqual(data.sets,[local,copy]);assert.deepEqual(data.progress,{'local/c':{attempts:2}});
+ assert.deepEqual(data.sessions,{local:{}});assert.equal(data.view,null);assert.equal('sources' in data,false);
+ assert.equal(context.removeSyncedData(data),false);
 });
-test('duplicate names rejected and explicit IDs support renamed content',()=>{
- const c=harness(),source={id:'remote',cardIds:{}};
- c.reconcile(source,{sets:[{id:'s',title:'A',items:[{...card,id:'c'}]}]});
- const old=c.state.sets[0];
- c.reconcile(source,{sets:[{id:'s',title:'B',items:[{...card,id:'c',term:'renamed'}]}]});
- assert.equal(c.state.sets[0].id,old.id);assert.equal(c.state.sets[0].items[0].id,old.items[0].id);
- assert.throws(()=>c.reconcile(source,{sets:[{title:'A',items:[]},{title:'A',items:[]}]}));
-});
-test('remote display names and dismissed sets survive synchronization',()=>{
- const c=harness(),source={id:'remote',cardIds:{},titleOverrides:{s:'My English'},dismissedKeys:['hidden']};
- const raw={sets:[{id:'s',title:'Original',items:[card]},{id:'hidden',title:'Hidden',items:[card]}]};
- c.reconcile(source,raw);
- assert.equal(c.state.sets.length,1);assert.equal(c.state.sets[0].title,'My English');
- const id=c.state.sets[0].id;
- c.reconcile(source,{sets:raw.sets.map(s=>({...s,title:s.title+' updated'}))});
- assert.equal(c.state.sets.length,1);assert.equal(c.state.sets[0].id,id);assert.equal(c.state.sets[0].title,'My English');
+test('source-only registration is removed and local view survives',()=>{
+ const data={sets:[{id:'local'}],sources:[],view:{setId:'local',screen:'cards'}};
+ assert.equal(context.removeSyncedData(data),true);assert.equal(data.view.screen,'cards');
 });

@@ -148,13 +148,6 @@ body,body:has(#cards.active,#quiz.active){height:100dvh;min-height:0;display:blo
 #sidebar .set-open .tag{flex-shrink:0;background:none;color:var(--muted);padding:0;font-size:.62rem;white-space:nowrap}
 #sidebar .set-open p,#sidebar .set-open .open-tail{display:none}
 #sidebar .panel{padding:8px;border:0;background:transparent;font-size:.75rem}
-#sidebar #addSource{display:block;width:auto;margin:0 4px 5px;padding:5px 7px;background:transparent;border:0;font-size:.75rem;min-height:30px;color:var(--muted)}
-#sources{gap:5px;margin-top:2px}
-.source-group{border:0;border-left:1px solid var(--line);padding-left:4px;margin-left:7px;min-width:0}
-.source-group>summary{cursor:pointer;overflow-wrap:anywhere;font-size:.77rem;font-weight:500;padding:6px 5px}
-.source-meta{padding:3px 7px;color:var(--muted);overflow-wrap:anywhere;font-size:.65rem;margin:0}
-.source-tools{display:flex;flex-wrap:wrap;gap:2px;padding:3px}
-.source-tools button{min-height:28px;padding:4px 6px;font-size:.7rem;background:transparent}
 .right-pane{display:flex;flex-direction:column;min-width:0;min-height:0;background:var(--bg)}
 .workspace-header{display:flex;align-items:center;gap:10px;flex:0 0 50px;padding:8px 20px}
 #workspaceTitle{font-size:.82rem;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}

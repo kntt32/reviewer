@@ -156,13 +156,26 @@ function save(){
  saveQueue=saveQueue.then(()=>persistState(snapshot)).then(()=>{$("storageStatus").hidden=true;return true}).catch(error=>{showStorageError('保存に失敗しました');console.error('保存に失敗しました',error);return false}).finally(()=>{if(--saveCount===0)document.body.dataset.saving='false'});
  return saveQueue;
 }
+function removeSyncedData(data){
+ if(!data||!Array.isArray(data.sets))return false;
+ const removed=new Set(data.sets.filter(s=>s.sourceId).map(s=>s.id));
+ const changed=removed.size>0||Object.hasOwn(data,'sources');
+ data.sets=data.sets.filter(s=>!s.sourceId);
+ for(const key of Object.keys(data.progress||{}))if([...removed].some(id=>key.startsWith(id+'/')))delete data.progress[key];
+ for(const id of removed)if(data.sessions)delete data.sessions[id];
+ if(removed.has(data.view?.setId))data.view=null;
+ delete data.sources;
+ return changed;
+}
 async function load(){
 try{
  const stored=await readStoredState();
  const legacyJSON=stored===undefined?localStorage.getItem(KEY):null;
- const d=stored===undefined?(legacyJSON?JSON.parse(legacyJSON):null):await hydrateState(stored);
+ const raw=stored===undefined?(legacyJSON?JSON.parse(legacyJSON):null):stored;
+ const cleaned=removeSyncedData(raw);
+ const d=stored===undefined?raw:await hydrateState(raw);
  if(d&&Array.isArray(d.sets)){
-  state={sets:d.sets.map(x=>({...set(x),...(x.sourceId?{sourceId:x.sourceId,remoteKey:x.remoteKey}: {})})),progress:d.progress||{},sessions:d.sessions||{},view:d.view||null,sources:Array.isArray(d.sources)?d.sources:[]};
+  state={sets:d.sets.map(x=>set(x)),progress:d.progress||{},sessions:d.sessions||{},view:d.view||null};
   for(const s of state.sets)restoreStudyDate(s,state.progress);
   // The first release silently installed this exact seed. Undo it only when untouched.
   const seedIds=["so-that-result","depend-on","relative-which-object","could-hardly-have","not-until-inversion","misleading-v-mistaken","apparently","how-adj-s-v","though-participial","physician","intended-to","provided-that","take-seriously","how-arrived","what-believed","however-adj","by-comparison","themselves-emphasis","no-longer","whose-relative","otherwise","borne-by","very-emphasis","in-some-measure","had-past-perfect-inversion","would-have-provided","far-from-ing","would-have-found","few-visible-traces","questions-which","particular","only-in-part"];
@@ -172,7 +185,7 @@ try{
    if(untouched){state.sets=state.sets.filter(x=>x!==legacy);save();}
    localStorage.setItem("kntt.reviewer.seed-cleanup.v1","done");
   }}catch{}
-  if(legacyJSON){if(!await save())throw Error('移行データを保存できません');localStorage.removeItem(KEY)}
+  if(legacyJSON||cleaned){if(!await save())throw Error('移行データを保存できません');if(legacyJSON)localStorage.removeItem(KEY)}
   return;
  }
 }catch(e){storageReadFailed=true;showStorageError('保存データを読み込めません');console.warn('保存データを読み込めません',e);return}
@@ -256,7 +269,7 @@ function renderDashboard(){
  const number=n=>n.toLocaleString('ja-JP');
  const metrics=[['学習回数',totals.attempts,'回答・評価の累計'],['クイズ回答',totals.quiz,'回'],['カード評価',totals.cards,'回'],['学習したカード',totals.learned,'枚']];
  $("dashboardMetrics").innerHTML=metrics.map(([label,value,unit])=>'<div class="dashboard-metric"><span>'+label+'</span><strong>'+number(value)+'</strong><small>'+unit+'</small></div>').join('');
- $("dashboardRecommendations").innerHTML=recommendations.length?recommendations.map(({set,resume,reason})=>'<article class="dashboard-recommendation"><p class="dashboard-reason">'+esc(reason)+'</p><h3>'+esc(set.title)+'</h3><p class="muted small">'+set.items.length+'枚 · '+(set.sourceId?'ウェブ':'ローカル')+'</p><button data-dashboard-open="'+esc(set.id)+'" data-study-mode="'+(resume||'list')+'">'+(resume?'続きから':'セットを開く')+' <span aria-hidden="true">→</span></button></article>').join(''):'<div class="dashboard-empty"><p>まだ学習できるセットがありません。</p></div>';
+ $("dashboardRecommendations").innerHTML=recommendations.length?recommendations.map(({set,resume,reason})=>'<article class="dashboard-recommendation"><p class="dashboard-reason">'+esc(reason)+'</p><h3>'+esc(set.title)+'</h3><p class="muted small">'+set.items.length+'枚</p><button data-dashboard-open="'+esc(set.id)+'" data-study-mode="'+(resume||'list')+'">'+(resume?'続きから':'セットを開く')+' <span aria-hidden="true">→</span></button></article>').join(''):'<div class="dashboard-empty"><p>まだ学習できるセットがありません。</p></div>';
  $("dashboardWeakCards").innerHTML=difficult.length?difficult.map(({set,card})=>'<button type="button" class="dashboard-weak-card" data-dashboard-card="'+esc(card.id)+'" data-set-id="'+esc(set.id)+'"><span class="dashboard-weak-copy"><span class="muted small">'+esc(set.title)+'</span><strong>'+esc(card.term)+'</strong><span class="dashboard-meaning">'+esc(card.meaning)+'</span></span><span aria-hidden="true">→</span></button>').join(''):'<div class="dashboard-empty"><p>苦手なカードはまだありません。</p></div>';
 }
 $("sets").addEventListener('click',e=>{
@@ -274,16 +287,15 @@ $("sets").addEventListener('click',e=>{
 
 function renderSets(){
  renderDashboard();
- renderSources();
  const q=$("setSearch").value.trim().toLocaleLowerCase();
- const visible=state.sets.filter(s=>!s.sourceId).filter(s=>[s.title,s.description,s.id].some(t=>t.toLocaleLowerCase().includes(q)));
+ const visible=state.sets.filter(s=>[s.title,s.description,s.id].some(t=>t.toLocaleLowerCase().includes(q)));
  const sorted=sortSets(visible,$("setSort").value);
  $("setGrid").innerHTML=sorted.length?sorted.map(s=>{
  const d=s.items.filter(x=>weak(progress(s.id,x.id))).length;
  return setButton(s,d);
  }).join(""):'<div class="panel muted">'+(state.sets.length?"一致する学習セットはありません。":"学習セットがありません。「作成」または「インポート」から追加してください。")+'</div>';
 }
-$("setSearch").oninput=()=>{if($("setSearch").value.trim()){$("localSection").open=true;$("webSection").open=true}renderSets()};
+$("setSearch").oninput=()=>{if($("setSearch").value.trim()){$("localSection").open=true}renderSets()};
 const setSort=$("setSort");
 try{
  const savedSort=localStorage.getItem(SORT_KEY);
@@ -309,13 +321,12 @@ function cardAction(action,id,label){
 }
 function renderList(){
  const s=selected();if(!s)return;
- for(const id of ["editSet","deleteSet","newItem"])$(id).hidden=!!s.sourceId;
  $("setTitle").textContent=s.title;$("setDesc").textContent=s.description;
  const vals=[["カード",s.items.length],["苦手",s.items.filter(x=>weak(progress(s.id,x.id))).length]];
  $("stats").innerHTML=vals.map(a=>'<div><strong>'+a[1]+'</strong><span>'+a[0]+'</span></div>').join("");
  const q=$("search").value.trim().toLowerCase();
  const cards=filter($("filter").value).filter(x=>[x.term,x.meaning,x.explanation].some(t=>t.toLowerCase().includes(q)));
- $("items").innerHTML=cards.length?cards.map(x=>'<article class="item" data-card-id="'+esc(x.id)+'"><div class="item-copy">'+(weak(progress(s.id,x.id))?'<span class="tag">苦手</span>':'')+'<h3>'+esc(x.term)+'</h3><p>'+esc(x.meaning)+'</p>'+((x.image||x.answerImage)?'<div class="card-thumbnails">'+imageMarkup(x.image,x.term)+imageMarkup(x.answerImage,x.meaning)+'</div>':'')+'</div><div class="item-tools">'+cardAction('explanation',x.id,x.term+'の解説・例を見る')+(s.sourceId?'':cardAction('edit',x.id,x.term+'を編集')+cardAction('remove',x.id,x.term+'を削除'))+'</div></article>').join(''):'<div class="panel muted">該当するカードはありません。</div>';
+ $("items").innerHTML=cards.length?cards.map(x=>'<article class="item" data-card-id="'+esc(x.id)+'"><div class="item-copy">'+(weak(progress(s.id,x.id))?'<span class="tag">苦手</span>':'')+'<h3>'+esc(x.term)+'</h3><p>'+esc(x.meaning)+'</p>'+((x.image||x.answerImage)?'<div class="card-thumbnails">'+imageMarkup(x.image,x.term)+imageMarkup(x.answerImage,x.meaning)+'</div>':'')+'</div><div class="item-tools">'+cardAction('explanation',x.id,x.term+'の解説・例を見る')+(cardAction('edit',x.id,x.term+'を編集')+cardAction('remove',x.id,x.term+'を削除'))+'</div></article>').join(''):'<div class="panel muted">該当するカードはありません。</div>';
 }
 function showExplanation(id){
  const x=selected()?.items.find(x=>x.id===id);if(!x)return;
@@ -442,7 +453,7 @@ function showSet(id){editingSet=id||"";let s=state.sets.find(x=>x.id===id);$("sT
 let menuSetId='',renamingSetId='';
 function showSetActions(id,trigger){
  const s=state.sets.find(s=>s.id===id);if(!s)return;
- menuSetId=id;$("setActionsTitle").textContent=s.title;$("setActionsHint").hidden=!s.sourceId;
+ menuSetId=id;$("setActionsTitle").textContent=s.title;
  showMenu($("setActionsPopover"),trigger);
 }
 function updateSetHeading(s){
@@ -452,11 +463,8 @@ function updateSetHeading(s){
 }
 async function removeSet(id){
  let s=state.sets.find(s=>s.id===id);if(!s)return;
- const note=s.sourceId?' この端末から削除し、同期時にも再表示しません。配信元を登録し直すと再取得できます。':'';
- if(!await askConfirmation('学習セット「'+s.title+'」とその学習履歴を削除しますか？'+note,{accept:'削除',title:'学習セットの削除'}))return;
+ if(!await askConfirmation('学習セット「'+s.title+'」とその学習履歴を削除しますか？',{accept:'削除',title:'学習セットの削除'}))return;
  s=state.sets.find(s=>s.id===id);if(!s)return;
- const source=(state.sources||[]).find(source=>source.id===s.sourceId);
- if(source)source.dismissedKeys=[...new Set([...(source.dismissedKeys||[]),s.remoteKey])];
  state.sets=state.sets.filter(s=>s.id!==id);
  for(const key of Object.keys(state.progress))if(key.startsWith(id+'/'))delete state.progress[key];
  if(state.sessions)delete state.sessions[id];
@@ -471,8 +479,6 @@ $("renameSetAction").onclick=()=>{
 $("renameForm").onsubmit=e=>{
  e.preventDefault();const title=$("renameInput").value.trim();if(!title)return;
  const s=state.sets.find(s=>s.id===renamingSetId);if(!s){$("renameDialog").close();return}
- const source=(state.sources||[]).find(source=>source.id===s.sourceId);
- if(source)source.titleOverrides={...source.titleOverrides,[s.remoteKey]:title};
  s.title=title;s.updatedAt=Date.now();save();renderSets();updateSetHeading(s);$("renameDialog").close();
 };
 $("deleteSetAction").onclick=()=>{const id=menuSetId;$("setActionsPopover").hidePopover();removeSet(id)};
@@ -537,7 +543,7 @@ $("newItem").onclick=()=>showItem("");$("cancelItem").onclick=()=>$("itemDialog"
 $("items").onclick=async e=>{
  const b=e.target.closest('button');if(!b)return;
  if(b.dataset.explanation){showExplanation(b.dataset.explanation);return}
- const s=selected();if(!s||s.sourceId)return;
+ const s=selected();if(!s)return;
  if(b.dataset.edit)showItem(b.dataset.edit);
  if(b.dataset.remove&&await askConfirmation('このカードと履歴を削除しますか？')){
  s.items=s.items.filter(x=>x.id!==b.dataset.remove);s.updatedAt=Date.now();
@@ -551,7 +557,7 @@ async function importData(raw){
  if(!inputs)throw Error("setsかitems配列が必要です");
  const includeHistory=raw&&raw.progress&&typeof raw.progress==='object'&&!Array.isArray(raw.progress)&&await askConfirmation('バックアップ内の学習履歴も取り込みますか？',{accept:'取り込む',cancel:'教材のみ',title:'バックアップの取り込み'});
  const next=JSON.parse(JSON.stringify(state)),incoming=[];
- for(const source of inputs){
+ for(const source of inputs.filter(source=>!source?.sourceId)){
   if(!source||!Array.isArray(source.items))throw Error("各セットにitems配列が必要です");
   const id=freshSetId(next.sets),assigned=[];
   // Never trust IDs from imported or AI-written content. Map old IDs only for restoring backups.
@@ -692,7 +698,7 @@ function updateSortButtons(){
 }
 document.querySelectorAll('[data-sort]').forEach(b=>b.onclick=()=>{
  sortTarget=b.dataset.sort;const select=$(sortTarget);
- $("sortTitle").textContent=(sortTarget==='setSort'?'ローカル':'ウェブ')+'の並び順';
+ $("sortTitle").textContent='並び順';
  $("sortChoices").innerHTML=Array.from(select.options).map(o=>'<button type="button" data-sort-value="'+esc(o.value)+'" role="menuitemradio" aria-checked="'+(o.selected?'true':'false')+'" aria-pressed="'+(o.selected?'true':'false')+'"><span>'+esc(o.textContent)+'</span><span aria-hidden="true">'+(o.selected?'✓':'')+'</span></button>').join('');
  showMenu($("sortPopover"),b);$("sortChoices").querySelector('[aria-pressed="true"]')?.focus();
 });
@@ -739,19 +745,11 @@ document.addEventListener('keydown',e=>{
 });
 mobileSidebar.addEventListener('change',()=>setSidebar(!mobileSidebar.matches&&!preferences.hidden,false));
 setSidebar(!mobileSidebar.matches&&!preferences.hidden,false);
-for(const id of ['localSection','webSection']){
+for(const id of ['localSection']){
  $(id).open=preferences[id]!==false;
  $(id).querySelector(':scope > summary').onclick=e=>{e.preventDefault();$(id).open=!$(id).open;preferences[id]=$(id).open;savePreferences()};
  $(id).addEventListener('toggle',()=>{preferences[id]=$(id).open;savePreferences()});
 }
-$("webSort").value=preferences.webSort||'createdAt:desc';
-$("webSort").onchange=()=>{preferences.webSort=$("webSort").value;savePreferences();renderSources()};
-function rememberSourceSection(section){
- const folded=new Set(preferences.folded||[]);
- if(section.open)folded.delete(section.dataset.sourceSection);else folded.add(section.dataset.sourceSection);
- preferences.folded=[...folded];savePreferences();
-}
-const syncing=new Set();
 function sortSets(sets,value){
  const [field,order]=value.split(':');
  const result=[...sets];
@@ -768,123 +766,6 @@ function sortSets(sets,value){
 function setButton(s,d=null){
  return '<div class="set-row"><button class="set-open" data-open="'+esc(s.id)+'"'+(s.id===active&&state.view?.screen!=='sets'?' aria-current="page"':'')+'><h3>'+esc(s.title)+'</h3><span class="tag">'+s.items.length+' 項目'+(d===null?'':' · '+d+' 苦手')+'</span></button><button type="button" class="set-menu-button icon-btn" data-set-menu="'+esc(s.id)+'" aria-label="'+esc(s.title)+'のメニュー" title="セットの操作" aria-haspopup="menu" aria-expanded="false"><svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg></button></div>';
 }
-function renderSources(){
- const q=$("setSearch").value.trim().toLocaleLowerCase();
- const [field,order]=$("webSort").value.split(':');
- const sources=[...(state.sources||[])];
- sources.sort((a,b)=>{
- if(field==='title')return a.name.localeCompare(b.name,'ja')*(order==='asc'?1:-1);
- const score=source=>Math.max(0,...state.sets.filter(s=>s.sourceId===source.id).map(s=>s[field]||0));
- return (score(a)-score(b))*(order==='asc'?1:-1);
- });
- $("sources").innerHTML=sources.map(source=>{
- const sets=sortSets(state.sets.filter(s=>s.sourceId===source.id&&[s.title,s.description,source.name].some(t=>t.toLocaleLowerCase().includes(q))),$("webSort").value);
- const folded=preferences.folded?.includes(source.id)&&!q;
- return '<details class="source-group" data-source-section="'+esc(source.id)+'" '+(folded?'':'open')+'><summary>'+esc(source.name)+'</summary><div class="set-grid">'+sets.map(s=>setButton(s)).join('')+'</div><div class="source-meta">'+esc(syncing.has(source.id)?'同期中…':source.error||(source.syncedAt?'最終同期: '+new Date(source.syncedAt).toLocaleString():'未同期'))+'</div><details><summary class="source-meta">配信元の操作</summary><p class="source-meta">'+esc(source.url)+'</p><div class="source-tools"><button data-sync="'+esc(source.id)+'" '+(syncing.has(source.id)?'disabled':'')+'>同期</button><button data-copy="'+esc(source.id)+'">ローカルへコピー</button><button data-unsubscribe="'+esc(source.id)+'">登録解除</button></div></details></details>';
- }).join('')||'<p class="muted small">URLを登録して教材を同期できます。</p>';
-}
-function remoteInputs(raw){
- const inputs=Array.isArray(raw?.sets)?raw.sets:Array.isArray(raw?.items)?[{title:raw.title||"取り込み教材",description:raw.description,items:raw.items}]:Array.isArray(raw)?[{title:"取り込み教材",items:raw}]:null;
- if(!inputs)throw Error("setsかitems配列が必要です");
- return inputs;
-}
-function remoteKey(x,fallback){return typeof x?.id==='string'&&x.id?x.id:fallback}
-function reconcile(source,raw){
- const previous=state.sets.filter(s=>s.sourceId===source.id),seen=new Set();
- const incoming=remoteInputs(raw).map(input=>{
- const key=remoteKey(input,String(input.title||""));
- if(seen.has(key))throw Error("セット名またはIDが重複しています");seen.add(key);
- const old=previous.find(s=>s.remoteKey===key),cardKeys=new Set();
- if(!Array.isArray(input.items))throw Error("items配列が必要です");
- const cards=input.items.map(x=>{
- const key=remoteKey(x,String(x.term||""));
- if(cardKeys.has(key))throw Error("カードのtermまたはIDが重複しています");cardKeys.add(key);
- // A deterministic local ID keeps progress when only explanations/options change.
- // item() permits bounded IDs; use a saved mapping for long or arbitrary source IDs.
- const localId=Object.hasOwn(source.cardIds,key)?source.cardIds[key]:(source.cardIds[key]=freshItemId());
- return item({...x,id:localId});
- });
- return {...set({...newSet(old?.id||freshSetId(),Object.hasOwn(source.titleOverrides||{},key)?source.titleOverrides[key]:input.title,input.description,cards),createdAt:old?.createdAt||Date.now(),lastStudiedAt:old?.lastStudiedAt}),sourceId:source.id,remoteKey:key};
- });
- state.sets=state.sets.filter(s=>s.sourceId!==source.id).concat(incoming.filter(s=>!(source.dismissedKeys||[]).includes(s.remoteKey)));
-}
-function sameSyncedCard(a,b){
- if(!a||!b)return a===b;
- return ['term','meaning','question','responseMode','answer','answerText','image','answerImage'].every(key=>a[key]===b[key])&&JSON.stringify(a.options)===JSON.stringify(b.options);
-}
-async function refreshSyncedStudy(previous){
- if(!previous)return;
- const current=state.sets.find(set=>set.id===previous.id);
- if(!current){if(active===previous.id){active='';await tab('sets')}return}
- const saved=state.sessions?.[current.id],ids=new Set(current.items.map(card=>card.id)),oldIds=new Set(previous.items.map(card=>card.id));
- const added=current.items.filter(card=>!oldIds.has(card.id)).map(card=>card.id);
- if(saved?.cards){
- const cardId=saved.cards.ids[saved.cards.pos];
- saved.cards.ids=saved.cards.ids.filter(id=>ids.has(id));
- if(saved.cards.scope==='all')saved.cards.ids.push(...added);
- saved.cards.pos=Math.max(0,saved.cards.ids.indexOf(cardId));
- if(!ids.has(cardId))saved.cards.reveal=false;
- }
- if(saved?.quiz){
- const quiz=saved.quiz;
- quiz.queue=quiz.queue.filter(id=>ids.has(id));quiz.seen=quiz.seen.filter(id=>ids.has(id));quiz.wrong=quiz.wrong.filter(id=>ids.has(id));
- if(quiz.scope==='all')quiz.queue.push(...added.filter(id=>id!==quiz.current&&!quiz.queue.includes(id)));
- if(!quiz.current&&quiz.queue.length){quiz.current=quiz.queue.shift();quiz.answered=null;quiz.freeDraft='';quiz.freeRevealed=false;if(!quiz.seen.includes(quiz.current))quiz.seen.push(quiz.current)}
- const oldCard=previous.items.find(card=>card.id===quiz.current),newCard=current.items.find(card=>card.id===quiz.current);
- if(newCard&&!sameSyncedCard(oldCard,newCard)){
- quiz.answered=null;quiz.freeDraft='';quiz.freeRevealed=false;quiz.wrong=quiz.wrong.filter(id=>id!==quiz.current);quiz.queue=quiz.queue.filter(id=>id!==quiz.current);
- }
- quiz.total=new Set([...quiz.seen,...quiz.queue,...(ids.has(quiz.current)?[quiz.current]:[])]).size;
- quiz.right=quiz.seen.filter(id=>!quiz.wrong.includes(id)&&(id!==quiz.current||quiz.answered===true)).length;
- }
- if(active!==current.id)return;
- updateSetHeading(current);
- if($('list').classList.contains('active'))renderList();
- if($('cards').classList.contains('active'))await buildCards();
- if($('quiz').classList.contains('active'))await restoreQuiz();
-}
-async function syncSource(source){
- if(syncing.has(source.id))return;
- syncing.add(source.id);renderSources();
- try{
- const response=await fetch(source.url,{cache:'no-store',credentials:'omit',signal:AbortSignal.timeout(20000)});
- if(!response.ok)throw Error('HTTP '+response.status);
- const raw=await response.json();
- if(!(state.sources||[]).includes(source))return;
- // Validate the entire response before replacing cached content or mappings.
- const previous=state.sets.filter(set=>set.sourceId===source.id);
- const draft={...source,cardIds:{...source.cardIds}};
- reconcile(draft,raw);source.cardIds=draft.cardIds;source.syncedAt=Date.now();source.error='';
- for(const set of previous)await refreshSyncedStudy(set);
- }catch(e){source.error='同期失敗: '+e.message+'（保存済みの教材を利用できます）'}
- finally{syncing.delete(source.id);save();renderSets()}
-}
-$("addSource").onclick=()=>{$("sourceMessage").textContent='';$("sourceDialog").showModal()};
-$("sourceForm").onsubmit=async e=>{
- e.preventDefault();
- try{
- const url=new URL($("sourceUrl").value);if(!['https:','http:'].includes(url.protocol)||url.username||url.password)throw Error('HTTP(S)の公開URLを指定してください');
- if((state.sources||[]).some(s=>s.url===url.href))throw Error('登録済みのURLです');
- const source={id:crypto.randomUUID(),name:$("sourceName").value.trim(),url:url.href,cardIds:{}};
- if(!source.name)throw Error('セクション名が必要です');
- (state.sources||= []).push(source);save();$("sourceDialog").close();$("sourceForm").reset();await syncSource(source);
- }catch(e){$("sourceMessage").textContent=e.message}
-};
-$("sources").onclick=async e=>{
- const menu=e.target.closest('[data-set-menu]');if(menu){showSetActions(menu.dataset.setMenu,menu);return}
- const summary=e.target.closest('[data-source-section] > summary');
- if(summary){e.preventDefault();const section=summary.parentElement;section.open=!section.open;rememberSourceSection(section);return}
- const b=e.target.closest('button');if(!b)return;
- if(b.dataset.open){open(b.dataset.open);return}
- const id=b.dataset.sync||b.dataset.unsubscribe||b.dataset.copy,source=state.sources.find(s=>s.id===id);if(!source)return;
- if(b.dataset.sync)syncSource(source);
- if(b.dataset.copy){await importData({sets:state.sets.filter(s=>s.sourceId===id)});return}
- if(b.dataset.unsubscribe&&!syncing.has(id)&&await askConfirmation('この配信元と教材・学習履歴を削除しますか？')){
- const ids=state.sets.filter(s=>s.sourceId===id).map(s=>s.id);
- state.sets=state.sets.filter(s=>s.sourceId!==id);state.sources=state.sources.filter(s=>s.id!==id);
- for(const k of Object.keys(state.progress))if(ids.some(id=>k.startsWith(id+'/')))delete state.progress[k];save();renderSets();
- }
-};
 $("storageRetry").onclick=()=>storageReadFailed?location.reload():save();
 $("storageBackup").onclick=()=>download('reviewer-backup.json',state);
 updateSortButtons();await load();renderSets();
@@ -892,6 +773,6 @@ if(state.view&&state.sets.some(s=>s.id===state.view.setId)&&['list','cards','qui
  active=state.view.setId;await tab(state.view.screen);
 }
 document.body.dataset.ready='true';
-for(const source of state.sources||[])syncSource(source);
+
 
 })();

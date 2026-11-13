@@ -14,7 +14,7 @@ for(const viewport of [{width:1280,height:800},{width:390,height:640}]){
  await page.route('https://feed.test/**',r=>r.fulfill({contentType:'application/json',body:JSON.stringify({sets:[{id:'remote',title:'Remote',items:[card]}]})}));
  await page.goto('https://reviewer.test/reviewer');
  await page.evaluate(async card=>localStorage.setItem('kntt.reviewer.v2',JSON.stringify({sets:[{id:'a',title:'Alpha',items:[card]},{id:'b',title:'Beta',items:[card]}],progress:{'a/c':{attempts:1},'b/c':{attempts:2}},sessions:{b:{cards:{ids:['c'],pos:0,reveal:true,scope:'all'}}},sources:[{id:'feed',name:'Feed',url:'https://feed.test/data.json',cardIds:{}}]})),card);
- await page.reload();await page.locator('#sources [data-set-menu]').waitFor({state:'attached'});
+ await page.reload();
  const mobile=viewport.width<=760;
  const openSidebar=async()=>{if(await page.locator('#sidebar').getAttribute('aria-hidden')==='true')await page.locator('#toggleSidebar').click()};
  await openSidebar();await page.locator('[data-open="a"]').click();await openSidebar();
@@ -28,14 +28,9 @@ for(const viewport of [{width:1280,height:800},{width:390,height:640}]){
  await page.locator('[data-set-menu="b"]').click();await page.locator('#deleteSetAction').click();await page.locator('#confirmCancel').click();assert.equal(await page.locator('[data-open="b"]').count(),1);
  await page.locator('[data-set-menu="b"]').click();await page.locator('#deleteSetAction').click();await page.locator('#confirmAccept').click();await page.waitForFunction(async()=>!(await window.readTestState()).sets.some(s=>s.id==='b'));
  assert.equal(await page.locator('#setTitle').innerText(),'Alpha');assert.equal(await page.evaluate(async()=>(await window.readTestState()).progress['a/c'].attempts),1);assert.equal(await page.evaluate(async()=>(await window.readTestState()).sessions.b),undefined);
- await page.locator('#sources [data-set-menu]').click();await page.locator('#renameSetAction').click();await page.locator('#renameInput').fill('My web set');await page.locator('#renameForm .primary').click();
- await page.reload();await openSidebar();await page.waitForFunction(async()=>document.querySelector('#sources .source-meta')?.textContent.includes('最終同期'));
- assert.equal(await page.locator('#sources .set-open h3').innerText(),'My web set');
- await page.locator('#sources [data-set-menu]').click();await page.locator('#deleteSetAction').click();await page.locator('#confirmAccept').click();await page.waitForFunction(async()=>!(await window.readTestState()).sets.some(s=>s.sourceId==='feed'));
- await page.reload();await openSidebar();await page.waitForFunction(async()=>document.querySelector('#sources .source-meta')?.textContent.includes('最終同期'));assert.equal(await page.locator('#sources .set-open').count(),0);
  // Deleting the selected set returns to the unselected workspace.
  await page.locator('[data-set-menu="a"]').click();await page.locator('#deleteSetAction').click();await page.locator('#confirmAccept').click();await page.locator('#sets.active').waitFor();
- assert.deepEqual(errors,[]);console.log('PASS set menu: target-only export, rename, cancel/delete, history isolation, remote sync overrides and dismissal:',viewport.width);
+ assert.deepEqual(errors,[]);console.log('PASS set menu: target-only export, rename, cancel/delete, history isolation:',viewport.width);
  await page.close();
 }
 }finally{await browser.close()}

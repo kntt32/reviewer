@@ -41,20 +41,14 @@ for(const viewport of [{width:1440,height:1000},{width:820,height:1180},{width:3
  assert.equal(await page.locator('#setSearch').isVisible(),false);
  await page.locator('#toggleSearch').click();await page.locator('#setSearch').fill('Alpha');assert.equal(await page.locator('#setGrid h3').count(),1);
  await page.locator('#toggleSearch').click();assert.equal(await page.locator('#setSearch').isVisible(),false);assert.equal(await page.locator('#setGrid h3').count(),2);
- await page.locator('[data-sort="webSort"]').click();await page.locator('[data-sort-value="title:asc"]').click();assert.equal(await page.locator('#sources .set-open h3').first().innerText(),'Another Web set');
- await page.locator('[data-sort="webSort"]').click();await page.locator('[data-sort-value="title:desc"]').click();assert.equal(await page.locator('#sources .set-open h3').first().innerText(),'Web set');
- await page.locator('#webSection>summary').click();assert.equal(await page.locator('#sources').isVisible(),false);await page.locator('#webSection>summary').click();
- await page.locator('[data-source-section]>summary').click();assert.equal(await page.locator('[data-open="r"]').isVisible(),false);
- await page.reload();if(mobile)await page.locator('#toggleSidebar').click();assert.equal(await page.locator('[data-open="r"]').isVisible(),false);
- await page.locator('[data-source-section]>summary').click();await page.locator('[data-open="r"]').click();assert.equal(await page.locator('#setTitle').innerText(),'Web set');
- if(mobile)await page.locator('#toggleSidebar').click();await page.locator('#toggleSidebar').click();assert.equal(await page.locator('#sidebar').isVisible(),false);
+ await page.locator('#toggleSidebar').click();
  assert.equal(await page.locator('#workspaceToggleSlot #toggleSidebar').count(),1);
  const full=await page.locator('.right-pane').boundingBox();assert.equal(full.width,viewport.width);
  await page.locator('#toggleSidebar').click();assert.equal(await page.locator('#sidebar').isVisible(),true);
  assert.deepEqual(errors,[]);
  if(viewport.width===1440)await page.screenshot({path:'/workspace/work/sidebar-desktop.png'});
  if(mobile){await page.locator('#toggleSidebar').click();await page.screenshot({path:'/workspace/work/sidebar-mobile.png'})}
- console.log('PASS sidebar layout, sort, collapse persistence, switching, web, hide/show, study bounds, touch-action:',viewport.width);
+ console.log('PASS sidebar layout, sort, collapse persistence, switching, hide/show, study bounds, touch-action:',viewport.width);
  await page.close();
 }
 for(const width of [1280,390]){
