@@ -9,6 +9,7 @@
   <a href="docs/development.md">開発・ビルド</a>
 </p>
 <p align="center">
+  <a href="https://github.com/kntt32/reviewer/releases/latest"><img src="https://img.shields.io/github/v/release/kntt32/reviewer" alt="最新リリース"></a>
   <a href="https://github.com/kntt32/reviewer/actions/workflows/publish.yml"><img src="https://github.com/kntt32/reviewer/actions/workflows/publish.yml/badge.svg" alt="Deploy の実行状態"></a>
   <a href="LICENSE"><img src="https://img.shields.io/github/license/kntt32/reviewer" alt="ライセンス: MIT"></a>
   <a href="docs/development.md"><img src="https://img.shields.io/badge/Node.js-24-5FA04E?logo=nodedotjs&amp;logoColor=white" alt="ビルド環境: Node.js 24"></a>

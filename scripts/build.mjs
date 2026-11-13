@@ -1,4 +1,5 @@
 import {readFile,writeFile,mkdir} from 'node:fs/promises';
+const {version}=JSON.parse(await readFile(new URL('../package.json',import.meta.url),'utf8'));
 const source=await readFile(new URL('../src/reviewer.html',import.meta.url),'utf8');
 const css=await readFile(new URL('../src/reviewer.css',import.meta.url),'utf8');
 const app=await readFile(new URL('../src/reviewer.js',import.meta.url),'utf8');
@@ -6,7 +7,7 @@ const icon=await readFile(new URL('../reviewer-icon.svg',import.meta.url));
 const manifest=JSON.parse(await readFile(new URL('../reviewer.webmanifest',import.meta.url),'utf8'));
 const iconUrl='data:image/svg+xml;base64,'+icon.toString('base64');
 manifest.icons[0].src=iconUrl;
-let html=source.replace('./reviewer-icon.svg',iconUrl).replace('./reviewer.webmanifest','data:application/manifest+json;base64,'+Buffer.from(JSON.stringify(manifest)).toString('base64'));
+let html=source.replace('<head>','<head><meta name="application-version" content="'+version+'">').replace('./reviewer-icon.svg',iconUrl).replace('./reviewer.webmanifest','data:application/manifest+json;base64,'+Buffer.from(JSON.stringify(manifest)).toString('base64'));
 const katex=await readFile(new URL('../node_modules/katex/dist/katex.min.js',import.meta.url),'utf8');
 const autoRender=await readFile(new URL('../node_modules/katex/dist/contrib/auto-render.min.js',import.meta.url),'utf8');
 const license=await readFile(new URL('../node_modules/katex/LICENSE',import.meta.url),'utf8');
