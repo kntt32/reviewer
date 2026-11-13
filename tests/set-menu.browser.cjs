@@ -18,6 +18,14 @@ for(const viewport of [{width:1280,height:800},{width:390,height:640}]){
  const mobile=viewport.width<=760;
  const openSidebar=async()=>{if(await page.locator('#sidebar').getAttribute('aria-hidden')==='true')await page.locator('#toggleSidebar').click()};
  await openSidebar();await page.locator('[data-open="a"]').click();await openSidebar();
+ await page.locator('[data-sort="setSort"]').click();await page.locator('[data-sort-value="title:asc"]').click();
+ assert.equal(await page.locator('#setGrid h3').first().innerText(),'Alpha');
+ await page.locator('[data-set-menu="b"]').click();await page.locator('#pinSetAction').click();
+ assert.equal(await page.locator('#setGrid h3').first().innerText(),'Beta');assert.equal(await page.locator('[data-open="b"] [aria-label="ピン留め済み"]').count(),1);
+ await page.reload();await openSidebar();assert.equal(await page.locator('#setGrid h3').first().innerText(),'Beta');
+ assert.equal((await page.evaluate(()=>window.readTestState())).sets.find(s=>s.id==='b').pinned,true);
+ await page.locator('[data-set-menu="b"]').click();assert.equal(await page.locator('#pinSetAction').innerText(),'ピン留めを解除');await page.locator('#pinSetAction').click();
+ assert.equal(await page.locator('#setGrid h3').first().innerText(),'Alpha');
  await page.locator('[data-set-menu="b"]').click();assert.equal(await page.locator('#setTitle').innerText(),'Alpha');
  const downloadPromise=page.waitForEvent('download');await page.locator('#exportSetAction').click();
  const download=await downloadPromise,data=JSON.parse(fs.readFileSync(await download.path(),'utf8'));

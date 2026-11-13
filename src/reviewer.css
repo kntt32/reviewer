@@ -323,3 +323,5 @@ dialog[open]{display:flex;flex-direction:column}
 .katex math{font-size:1.12em;white-space:normal}.katex-display math{display:block}
 .flash .katex-display{width:100%}.detail .katex-display{white-space:normal}
 .sidebar-fixed{flex-shrink:0;background:var(--sidebar-bg);padding:0 8px 6px}.sidebar-fixed .home-actions{margin:0}.sidebar-scroll{flex:1;min-height:0;padding:0 8px;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin}
+
+.pin-indicator{display:inline-flex;vertical-align:middle;margin-right:5px;color:var(--muted)}

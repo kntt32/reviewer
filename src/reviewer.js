@@ -54,7 +54,7 @@ function item(x){
 }
 const timestamp=value=>Number.isFinite(value)&&value>0?value:null;
 function set(x){if(!x||!idOK(x.id)||!String(x.title||"").trim()||!Array.isArray(x.items))throw Error("セットにはtitleとitemsが必要です");const a=x.items.map(item);if(new Set(a.map(v=>v.id)).size!==a.length)throw Error("同一セット内に重複IDがあります");return{id:x.id,title:String(x.title),description:String(x.description||""),items:a,
- createdAt:timestamp(x.createdAt),updatedAt:timestamp(x.updatedAt),lastStudiedAt:timestamp(x.lastStudiedAt)}}
+ pinned:x.pinned===true,createdAt:timestamp(x.createdAt),updatedAt:timestamp(x.updatedAt),lastStudiedAt:timestamp(x.lastStudiedAt)}}
 function newSet(id,title,description,items=[]){
  const now=Date.now();
  return {id,title,description,items,createdAt:now,updatedAt:now,lastStudiedAt:null};
@@ -459,7 +459,7 @@ function showSet(id){editingSet=id||"";let s=state.sets.find(x=>x.id===id);$("sT
 let menuSetId='',renamingSetId='';
 function showSetActions(id,trigger){
  const s=state.sets.find(s=>s.id===id);if(!s)return;
- menuSetId=id;$("setActionsTitle").textContent=s.title;
+ menuSetId=id;$("setActionsTitle").textContent=s.title;$("pinSetAction").textContent=s.pinned?'ピン留めを解除':'ピン留め';
  showMenu($("setActionsPopover"),trigger);
 }
 function updateSetHeading(s){
@@ -477,6 +477,10 @@ async function removeSet(id){
  if(active===id){active='';state.view=null;save();tab('sets')}else save();
  renderSets();
 }
+$("pinSetAction").onclick=()=>{
+ const s=state.sets.find(s=>s.id===menuSetId);if(!s)return;
+ s.pinned=!s.pinned;$("setActionsPopover").hidePopover();save();renderSets();
+};
 $("renameSetAction").onclick=()=>{
  const s=state.sets.find(s=>s.id===menuSetId);if(!s)return;
  renamingSetId=s.id;$("renameInput").value=s.title;$("setActionsPopover").hidePopover();
@@ -761,6 +765,7 @@ function sortSets(sets,value){
  const result=[...sets];
  if(field==='createdAt'&&order==='desc')result.reverse();
  return result.sort((a,b)=>{
+ if(!!a.pinned!==!!b.pinned)return a.pinned?-1:1;
  const left=a[field],right=b[field];
  if(field==='title')return String(left).localeCompare(String(right),'ja')*(order==='asc'?1:-1);
  if(left===right)return 0;
@@ -770,7 +775,7 @@ function sortSets(sets,value){
  });
 }
 function setButton(s,d=null){
- return '<div class="set-row"><button class="set-open" data-open="'+esc(s.id)+'"'+(s.id===active&&state.view?.screen!=='sets'?' aria-current="page"':'')+'><h3>'+esc(s.title)+'</h3><span class="tag">'+s.items.length+' 項目'+(d===null?'':' · '+d+' 苦手')+'</span></button><button type="button" class="set-menu-button icon-btn" data-set-menu="'+esc(s.id)+'" aria-label="'+esc(s.title)+'のメニュー" title="セットの操作" aria-haspopup="menu" aria-expanded="false"><svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg></button></div>';
+ return '<div class="set-row"><button class="set-open" data-open="'+esc(s.id)+'"'+(s.id===active&&state.view?.screen!=='sets'?' aria-current="page"':'')+'><h3>'+(s.pinned?'<span class="pin-indicator" role="img" aria-label="ピン留め済み"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="m16 3 5 5-4 2-3 5-2-2-6 6-1-1 6-6-2-2 5-3z"/></svg></span>':'')+esc(s.title)+'</h3><span class="tag">'+s.items.length+' 項目'+(d===null?'':' · '+d+' 苦手')+'</span></button><button type="button" class="set-menu-button icon-btn" data-set-menu="'+esc(s.id)+'" aria-label="'+esc(s.title)+'のメニュー" title="セットの操作" aria-haspopup="menu" aria-expanded="false"><svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg></button></div>';
 }
 $("storageRetry").onclick=()=>storageReadFailed?location.reload():save();
 $("storageBackup").onclick=()=>download('reviewer-backup.json',state);
