@@ -11,7 +11,7 @@ document.addEventListener('pointerdown',pointerInteraction,true);
 document.addEventListener('click',e=>{if(e.detail>0)pointerInteraction()},true);
 document.addEventListener('keydown',()=>{inputRoot.dataset.keyboard='true'},true);
 let quizCurrent=null,quizOrder=[],quizAnswered=null,freeDraft='',freeRevealed=false;
-let state={sets:[],progress:{}},active="",editingSet="",editingItem="",deck=[],pos=0,reveal=false,queue=[],firstSeen=new Set(),wrongOnce=new Set(),firstRight=0,quizTotal=0;
+let state={sets:[],progress:{}},active="",editingSet="",editingItem="",deck=[],cardTotal=0,pos=0,reveal=false,queue=[],firstSeen=new Set(),wrongOnce=new Set(),firstRight=0,quizTotal=0;
 const mathRoots=new Set();let mathPending=false;
 function typesetMath(root){
  if(!globalThis.renderMathInElement)return;
@@ -346,13 +346,14 @@ function buildCards(reset=false){
  if(saved){
  $("cardScope").value=saved.scope;
  deck=saved.ids.map(id=>selected().items.find(x=>x.id===id)).filter(Boolean);
+ cardTotal=Math.max(deck.length,saved.total||deck.length);
  pos=Math.min(saved.pos,Math.max(0,deck.length-1));reveal=!!saved.reveal;
- }else{deck=[...filter($("cardScope").value)];pos=0;reveal=false}
+ }else{deck=[...filter($("cardScope").value)];cardTotal=deck.length;pos=0;reveal=false}
  return renderCard();
 }
 let cardRenderVersion=0;
-async function renderCard(){const version=++cardRenderVersion;for(const button of $("cards").querySelectorAll("button:not([data-detail-back]),select"))button.disabled=true;session().cards={ids:deck.map(x=>x.id),pos,reveal,scope:$("cardScope").value};await save();if(version!==cardRenderVersion)return;for(const button of $("cards").querySelectorAll("button:not([data-detail-back]),select"))button.disabled=false;let x=deck[pos];$("cardCount").textContent=x?(pos+1)+" / "+deck.length:"0 / 0";$("cardBar").style.width=x?(100*(pos+1)/deck.length)+"%":"0%";$("grades").hidden=!x||!reveal;$("prev").disabled=pos===0;$("next").disabled=!x||pos>=deck.length-1;$("flip").disabled=!x;$("flip").textContent=reveal?"答えを隠す":"答えを見る";$("flash").scrollTop=0;$("flash").innerHTML=x?'<strong>'+esc(x.term)+'</strong>'+imageMarkup(x.image,x.term)+(reveal?'<div><b>'+esc(x.meaning)+'</b>'+imageMarkup(x.answerImage,x.meaning)+'<p class="detail">'+esc(x.explanation)+'</p><p class="example">'+esc(x.example)+'\n'+esc(x.translation)+'</p></div>':'<p class="muted">答えを思い出してから表示</p>'):'<p class="muted">対象カードがありません。</p>'}
-$("restartCards").onclick=()=>buildCards(true);$("cardScope").onchange=()=>buildCards(true);$("flip").onclick=()=>{reveal=!reveal;renderCard()};$("prev").onclick=()=>{if(pos>0){pos--;reveal=false;renderCard()}};$("next").onclick=()=>{if(pos<deck.length-1){pos++;reveal=false;renderCard()}};$("shuffle").onclick=()=>{deck.sort(()=>Math.random()-.5);pos=0;reveal=false;renderCard()};document.querySelectorAll("[data-grade]").forEach(b=>b.onclick=()=>{if(!deck[pos])return;grade(deck[pos].id,b.dataset.grade);deck.splice(pos,1);pos=Math.min(pos,Math.max(deck.length-1,0));reveal=false;renderCard()});
+async function renderCard(){const version=++cardRenderVersion;for(const button of $("cards").querySelectorAll("button:not([data-detail-back]),select"))button.disabled=true;session().cards={ids:deck.map(x=>x.id),total:cardTotal,pos,reveal,scope:$("cardScope").value};await save();if(version!==cardRenderVersion)return;for(const button of $("cards").querySelectorAll("button:not([data-detail-back]),select"))button.disabled=false;let x=deck[pos];$("cardCount").textContent=(cardTotal-deck.length)+" / "+cardTotal;$("cardBar").style.width=cardTotal?(100*(cardTotal-deck.length)/cardTotal)+"%":"0%";$("grades").hidden=!x||!reveal;$("prev").disabled=pos===0;$("next").disabled=!x||pos>=deck.length-1;$("flip").disabled=!x;$("flip").textContent=reveal?"答えを隠す":"答えを見る";$("flash").scrollTop=0;$("flash").innerHTML=x?'<strong>'+esc(x.term)+'</strong>'+imageMarkup(x.image,x.term)+(reveal?'<div><b>'+esc(x.meaning)+'</b>'+imageMarkup(x.answerImage,x.meaning)+'<p class="detail">'+esc(x.explanation)+'</p><p class="example">'+esc(x.example)+'\n'+esc(x.translation)+'</p></div>':'<p class="muted">答えを思い出してから表示</p>'):'<p class="muted">対象カードがありません。</p>'}
+$("restartCards").onclick=()=>buildCards(true);$("cardScope").onchange=()=>buildCards(true);$("flip").onclick=()=>{reveal=!reveal;renderCard()};$("prev").onclick=()=>{if(pos>0){pos--;reveal=false;renderCard()}};$("next").onclick=()=>{if(pos<deck.length-1){pos++;reveal=false;renderCard()}};$("shuffle").onclick=()=>{deck.sort(()=>Math.random()-.5);pos=0;reveal=false;renderCard()};document.querySelectorAll("[data-grade]").forEach(b=>b.onclick=()=>{if(!deck[pos])return;grade(deck[pos].id,b.dataset.grade);const [card]=deck.splice(pos,1);if(b.dataset.grade==='wrong')deck.push(card);pos=Math.min(pos,Math.max(deck.length-1,0));reveal=false;renderCard()});
 let quizRenderVersion=0;
 function resetQuizView(){
  quizRenderVersion++;$("startQuiz").disabled=false;$("quizScope").disabled=false;
@@ -391,11 +392,15 @@ async function nextQuiz(){
  if(quizCurrent)firstSeen.add(quizCurrent);
  const setId=active;$("startQuiz").disabled=true;$("quizScope").disabled=true;await saveQuiz();if(version!==quizRenderVersion||active!==setId)return;$("startQuiz").disabled=false;$("quizScope").disabled=false;renderQuiz();
 }
-function renderQuiz(){
- const id=quizCurrent,x=selected()?.items.find(a=>a.id===id);
- const position=Math.min(quizTotal,firstSeen.size);
+function renderQuizProgress(){
+ const pending=new Set(queue);if(quizCurrent&&quizAnswered!==true)pending.add(quizCurrent);
+ const position=Math.max(0,quizTotal-pending.size);
  $("quizCount").textContent=position+" / "+quizTotal;
  $("quizBar").style.width=(quizTotal?100*position/quizTotal:0)+"%";
+}
+function renderQuiz(){
+ const id=quizCurrent,x=selected()?.items.find(a=>a.id===id);
+ renderQuizProgress();
  if(!x){
   if(!quizTotal){
    $("quizBody").innerHTML='<div class="flash muted">出題できるカードがありません。</div>';
@@ -437,6 +442,7 @@ async function answerQuiz(x,ok){
  await saveQuiz();if(active===setId&&quizCurrent===current&&version===quizRenderVersion)renderQuizFeedback(x,ok);
 }
 function renderQuizFeedback(x,ok){
+  renderQuizProgress();
   $("feedback").innerHTML='<strong>'+(ok?'正解':'不正解 — 後で再出題')+'</strong><div>'+(x.responseMode==='free'?freeAnswerContent(x):'<p>正解：'+esc(x.options[x.answer])+'</p>'+imageMarkup(x.image,x.term)+imageMarkup(x.answerImage,x.meaning)+'<p class="detail">'+esc(x.explanation)+'</p>')+'</div>';
   $("feedback").scrollTop=0;
   const answers=$("quizAnswers");
