@@ -336,8 +336,6 @@ dialog[open]{display:flex;flex-direction:column}
 #quizAnswers button[data-correct]{
  background:#dcf5e7;color:#124b30;border-color:#418365;
 }
-#quizAnswers button[data-correct][data-selected]{box-shadow:inset 0 0 0 1px currentColor}
-.answer-status{display:block;font-size:.75rem;font-weight:600;margin-top:3px}
 @media(prefers-color-scheme:dark){
  :is(#quizAnswers,#grades) button[data-selected]{
   background:#513a1e;color:#ffe4b7;border-color:#bf8b45;
@@ -345,4 +343,9 @@ dialog[open]{display:flex;flex-direction:column}
  #quizAnswers button[data-correct]{
   background:#1d4334;color:#c9f5db;border-color:#6baa88;
  }
+}
+
+#quizAnswers button[data-selected]:not([data-correct]){background:#fde2e2;color:#751b1b;border-color:#bb5555}
+@media(prefers-color-scheme:dark){
+ #quizAnswers button[data-selected]:not([data-correct]){background:#542929;color:#ffdada;border-color:#cc7777}
 }

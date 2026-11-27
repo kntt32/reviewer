@@ -358,15 +358,10 @@ function buildCards(reset=false){
  }
  return renderCard();
 }
-function markAnswer(button,correct,selected,label=''){
+function markAnswer(button,correct,selected){
  button.disabled=true;
  if(correct)button.dataset.correct='true';
  if(selected)button.dataset.selected='true';
- if(label){
-  const status=document.createElement('span');
-  status.className='answer-status';status.textContent=label;
-  button.append(status);
- }
 }
 const gradeButtons=[...$("grades").querySelectorAll("[data-grade]")];
 let cardRenderVersion=0;
@@ -390,8 +385,7 @@ async function renderCard(){
  $("flip").textContent=reveal?"答えを隠す":"答えを見る";
  for(const button of gradeButtons){
   delete button.dataset.selected;
-  button.querySelector('.answer-status')?.remove();
-  if(entry?.grade)markAnswer(button,false,button.dataset.grade===entry.grade,button.dataset.grade===entry.grade?'選択した評価':'');
+  if(entry?.grade)markAnswer(button,false,button.dataset.grade===entry.grade);
  }
  $("flash").scrollTop=0;
  $("flash").innerHTML=x?'<strong>'+esc(x.term)+'</strong>'+imageMarkup(x.image,x.term)+(reveal?'<div><b>'+esc(x.meaning)+'</b>'+imageMarkup(x.answerImage,x.meaning)+'<p class="detail">'+esc(x.explanation)+'</p><p class="example">'+esc(x.example)+'\n'+esc(x.translation)+'</p></div>':'<p class="muted">答えを思い出してから表示</p>'):'<p class="muted">'+(cardEntries.length?'単語カードの最後まで進みました。':'対象カードがありません。')+'</p>';
@@ -529,7 +523,7 @@ function renderFreeAnswer(x,attempt){
  for(const button of answers.querySelectorAll('[data-self-grade]')){
   const good=button.dataset.selfGrade==='good';
   if(attempt.answered===null)button.onclick=()=>answerQuiz(x,attempt,good);
-  else markAnswer(button,false,good===attempt.answered,good===attempt.answered?'選択した評価':'');
+  else markAnswer(button,false,good===attempt.answered);
  }
 }
 function answerQuiz(x,attempt,ok){
@@ -546,7 +540,7 @@ function renderQuizFeedback(x,attempt){
   const index=+button.dataset.answer;
   const correct=index===x.answer;
   const chosen=index===(attempt.selection??(attempt.answered?x.answer:null));
-  markAnswer(button,correct,chosen,correct?(chosen?'正解・選択した回答':'正解'):(chosen?'選択した回答':''));
+  markAnswer(button,correct,chosen);
  }
 }
 $("startQuiz").onclick=startQuiz;
