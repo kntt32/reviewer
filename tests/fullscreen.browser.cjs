@@ -12,6 +12,7 @@ for(const viewport of [{width:1280,height:800},{width:390,height:640},{width:820
  await page.evaluate(async()=>localStorage.setItem('kntt.reviewer.v2',JSON.stringify({sets:[{id:'s',title:'English',items:[{id:'c',term:'term',meaning:'meaning',options:['a','b','c','d'],answer:0}]}],progress:{}})));
  await page.reload();const mobile=viewport.width<=760;if(mobile)await page.locator('#toggleSidebar').click();await page.locator('[data-open="s"]').click();
  async function checkStudy(id){
+ await page.locator('#'+id+'.active').waitFor();
  assert.equal(await page.locator('#sidebar').isVisible(),false);assert.equal(await page.locator('.workspace-header').isVisible(),false);
  assert.equal(await page.locator('#sidebar').evaluate(async e=>e.inert),true);assert.equal(await page.locator('.right-pane').evaluate(async e=>e.inert),false);
  const box=await page.locator('.right-pane').boundingBox();assert.equal(box.x,0);assert.equal(box.y,0);assert.equal(box.width,viewport.width);assert.equal(box.height,viewport.height);

@@ -44,16 +44,7 @@ main.wrap{padding-top:8px;padding-bottom:calc(54px + env(safe-area-inset-bottom)
 .set-info{padding:16px}.detail-tools button{padding:8px}
 }
 
-/* Smooth, restrained page and dialog motion */
-@keyframes screen-arrive{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
-.screen.active{animation:screen-arrive 220ms cubic-bezier(.2,.75,.25,1) both}
-@supports (view-transition-name:root){
- .screen.active{animation:none}
- ::view-transition-old(root){animation:145ms ease-in both fade-away}
- ::view-transition-new(root){animation:220ms cubic-bezier(.2,.75,.25,1) both fade-in}
-}
-@keyframes fade-away{to{opacity:0}}
-@keyframes fade-in{from{opacity:0}to{opacity:1}}
+/* Dialog motion */
 dialog{opacity:0;transform:translateY(12px) scale(.985);transition:opacity 180ms ease,transform 220ms cubic-bezier(.2,.75,.25,1),display 220ms allow-discrete,overlay 220ms allow-discrete}
 dialog[open]{opacity:1;transform:translateY(0) scale(1)}
 @starting-style{dialog[open]{opacity:0;transform:translateY(12px) scale(.985)}}
@@ -63,9 +54,7 @@ dialog[open]::backdrop{opacity:1}
 #createForm label{font-size:.85rem;font-weight:650}
 #createForm input,#createForm textarea{display:block;margin-top:6px;width:100%}
 @media(prefers-reduced-motion:reduce){
- .screen.active{animation:none!important}
  dialog,dialog::backdrop{transition:none!important}
- ::view-transition-old(root),::view-transition-new(root){animation:none!important}
 }
 /* Keep study controls in view while long card content scrolls independently. */
 body:has(#cards.active,#quiz.active){

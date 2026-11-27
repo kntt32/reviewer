@@ -206,26 +206,21 @@ function tab(name,afterRender){
  const target=$(name);
 
  const switchScreen=async()=>{
-  if(version!==navigationVersion)return;
-  document.querySelectorAll(".screen").forEach(v=>v.classList.toggle("active",v===target));
-  document.body.classList.toggle('study-mode',name==='cards'||name==='quiz');
-  setSidebar(!document.body.classList.contains('sidebar-hidden'),false);
   if(name==="sets")renderSets();
   if(name==="list")renderList();
   if(name==="cards")await buildCards();
   if(name==="quiz"){$("quizTitle").textContent=selected().title;await restoreQuiz();}
   if(version!==navigationVersion)return;
   if(name!=='sets'&&!selected()){tab('sets');return}
+  document.querySelectorAll(".screen").forEach(v=>v.classList.toggle("active",v===target));
+  document.body.classList.toggle('study-mode',name==='cards'||name==='quiz');
+  setSidebar(!document.body.classList.contains('sidebar-hidden'),false);
   state.view={setId:active,screen:name};save();
   $("workspaceTitle").textContent=name==="sets"?"Reviewer":selected().title;
   renderSets();$("workspace").scrollTop=0;
   afterRender?.();
  };
- if(document.startViewTransition&&!window.matchMedia("(prefers-reduced-motion: reduce)").matches){
-  return document.startViewTransition(switchScreen).updateCallbackDone;
- }else{
-  return switchScreen();
- }
+ return switchScreen();
 }
 $("back").onclick=$("homeLink").onclick=()=>tab("sets");
 document.querySelectorAll("[data-detail-back]").forEach(b=>b.onclick=()=>tab("list"));
