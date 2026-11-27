@@ -10,8 +10,8 @@ function pointerInteraction(){inputRoot.dataset.keyboard='false'}
 document.addEventListener('pointerdown',pointerInteraction,true);
 document.addEventListener('click',e=>{if(e.detail>0)pointerInteraction()},true);
 document.addEventListener('keydown',()=>{inputRoot.dataset.keyboard='true'},true);
-let quizCurrent=null,quizOrder=[],quizAnswered=null,freeDraft='',freeRevealed=false;
-let state={sets:[],progress:{}},active="",editingSet="",editingItem="",deck=[],cardTotal=0,pos=0,reveal=false,queue=[],firstSeen=new Set(),wrongOnce=new Set(),firstRight=0,quizTotal=0;
+let quizAttempts=[],quizPosition=0,cardEntries=[],cardPosition=0;
+let state={sets:[],progress:{}},active="",editingSet="",editingItem="",cardTotal=0,queue=[],wrongOnce=new Set(),firstRight=0,quizTotal=0;
 const mathRoots=new Set();let mathPending=false;
 function typesetMath(root){
  if(!globalThis.renderMathInElement)return;
@@ -339,21 +339,82 @@ function showExplanation(id){
 }
 $("search").oninput=renderList;$("filter").onchange=renderList;
 function session(){return (state.sessions||={})[active]||((state.sessions)[active]={})}
+function restoreStudyEntries(entries,position,ids){
+ const known=entry=>ids.has(entry.id);
+ return [entries.filter(known),entries.slice(0,position).filter(known).length];
+}
 function buildCards(reset=false){
- if(!selected())return;
- $("cardTitle").textContent=selected().title;
+ const set=selected();if(!set)return;
+ $("cardTitle").textContent=set.title;
  const saved=!reset&&session().cards;
  if(saved){
- $("cardScope").value=saved.scope;
- deck=saved.ids.map(id=>selected().items.find(x=>x.id===id)).filter(Boolean);
- cardTotal=Math.max(deck.length,saved.total||deck.length);
- pos=Math.min(saved.pos,Math.max(0,deck.length-1));reveal=!!saved.reveal;
- }else{deck=[...filter($("cardScope").value)];cardTotal=deck.length;pos=0;reveal=false}
+  $("cardScope").value=saved.scope;
+  const entries=saved.entries??saved.ids.map((id,i)=>({id,revealed:i===saved.pos&&!!saved.reveal}));
+  [cardEntries,cardPosition]=restoreStudyEntries(entries,saved.position??saved.pos,new Set(set.items.map(x=>x.id)));
+  cardTotal=Math.max(cardEntries.filter(entry=>!entry.grade).length,saved.total||0);
+ }else{
+  cardEntries=filter($("cardScope").value).map(x=>({id:x.id}));
+  cardTotal=cardEntries.length;cardPosition=0;
+ }
  return renderCard();
 }
+function markAnswer(button,correct,selected,label=''){
+ button.disabled=true;
+ if(correct)button.dataset.correct='true';
+ if(selected)button.dataset.selected='true';
+ if(label){
+  const status=document.createElement('span');
+  status.className='answer-status';status.textContent=label;
+  button.append(status);
+ }
+}
+const gradeButtons=[...$("grades").querySelectorAll("[data-grade]")];
 let cardRenderVersion=0;
-async function renderCard(){const version=++cardRenderVersion;for(const button of $("cards").querySelectorAll("button:not([data-detail-back]),select"))button.disabled=true;session().cards={ids:deck.map(x=>x.id),total:cardTotal,pos,reveal,scope:$("cardScope").value};await save();if(version!==cardRenderVersion)return;for(const button of $("cards").querySelectorAll("button:not([data-detail-back]),select"))button.disabled=false;let x=deck[pos];$("cardCount").textContent=(cardTotal-deck.length)+" / "+cardTotal;$("cardBar").style.width=cardTotal?(100*(cardTotal-deck.length)/cardTotal)+"%":"0%";$("grades").hidden=!x||!reveal;$("prev").disabled=pos===0;$("next").disabled=!x||pos>=deck.length-1;$("flip").disabled=!x;$("flip").textContent=reveal?"答えを隠す":"答えを見る";$("flash").scrollTop=0;$("flash").innerHTML=x?'<strong>'+esc(x.term)+'</strong>'+imageMarkup(x.image,x.term)+(reveal?'<div><b>'+esc(x.meaning)+'</b>'+imageMarkup(x.answerImage,x.meaning)+'<p class="detail">'+esc(x.explanation)+'</p><p class="example">'+esc(x.example)+'\n'+esc(x.translation)+'</p></div>':'<p class="muted">答えを思い出してから表示</p>'):'<p class="muted">対象カードがありません。</p>'}
-$("restartCards").onclick=()=>buildCards(true);$("cardScope").onchange=()=>buildCards(true);$("flip").onclick=()=>{reveal=!reveal;renderCard()};$("prev").onclick=()=>{if(pos>0){pos--;reveal=false;renderCard()}};$("next").onclick=()=>{if(pos<deck.length-1){pos++;reveal=false;renderCard()}};$("shuffle").onclick=()=>{deck.sort(()=>Math.random()-.5);pos=0;reveal=false;renderCard()};document.querySelectorAll("[data-grade]").forEach(b=>b.onclick=()=>{if(!deck[pos])return;grade(deck[pos].id,b.dataset.grade);const [card]=deck.splice(pos,1);if(b.dataset.grade==='wrong')deck.push(card);pos=Math.min(pos,Math.max(deck.length-1,0));reveal=false;renderCard()});
+async function renderCard(){
+ const version=++cardRenderVersion,setId=active;
+ const buttons=$("cards").querySelectorAll("button:not([data-detail-back]),select");
+ for(const button of buttons)button.disabled=true;
+ const remaining=cardEntries.filter(entry=>!entry.grade);
+ session().cards={ids:remaining.map(entry=>entry.id),entries:cardEntries,position:cardPosition,total:cardTotal,scope:$("cardScope").value};
+ await save();
+ if(version!==cardRenderVersion||active!==setId)return;
+ for(const button of buttons)button.disabled=false;
+ const entry=cardEntries[cardPosition],x=selected()?.items.find(x=>x.id===entry?.id);
+ const reveal=x&&(entry.revealed||entry.grade);
+ $("cardCount").textContent=(cardTotal-remaining.length)+" / "+cardTotal;
+ $("cardBar").style.width=cardTotal?(100*(cardTotal-remaining.length)/cardTotal)+"%":"0%";
+ $("grades").hidden=!reveal;
+ $("prev").disabled=cardPosition===0;
+ $("next").disabled=cardPosition>=cardEntries.length;
+ $("flip").disabled=!x||!!entry.grade;
+ $("flip").textContent=reveal?"答えを隠す":"答えを見る";
+ for(const button of gradeButtons){
+  delete button.dataset.selected;
+  button.querySelector('.answer-status')?.remove();
+  if(entry?.grade)markAnswer(button,false,button.dataset.grade===entry.grade,button.dataset.grade===entry.grade?'選択した評価':'');
+ }
+ $("flash").scrollTop=0;
+ $("flash").innerHTML=x?'<strong>'+esc(x.term)+'</strong>'+imageMarkup(x.image,x.term)+(reveal?'<div><b>'+esc(x.meaning)+'</b>'+imageMarkup(x.answerImage,x.meaning)+'<p class="detail">'+esc(x.explanation)+'</p><p class="example">'+esc(x.example)+'\n'+esc(x.translation)+'</p></div>':'<p class="muted">答えを思い出してから表示</p>'):'<p class="muted">'+(cardEntries.length?'単語カードの最後まで進みました。':'対象カードがありません。')+'</p>';
+}
+$("restartCards").onclick=()=>buildCards(true);
+$("cardScope").onchange=()=>buildCards(true);
+$("flip").onclick=()=>{const entry=cardEntries[cardPosition];entry.revealed=!entry.revealed;renderCard()};
+$("prev").onclick=()=>{cardPosition--;renderCard()};
+$("next").onclick=()=>{cardPosition++;renderCard()};
+$("shuffle").onclick=()=>{
+ const graded=cardEntries.filter(entry=>entry.grade);
+ const pending=cardEntries.filter(entry=>!entry.grade).sort(()=>Math.random()-.5);
+ cardEntries=[...graded,...pending];cardPosition=graded.length;renderCard();
+};
+for(const button of gradeButtons)button.onclick=()=>{
+ const entry=cardEntries[cardPosition];
+ if(!entry||entry.grade)return;
+ entry.grade=button.dataset.grade;
+ grade(entry.id,entry.grade);
+ if(entry.grade==='wrong')cardEntries.push({id:entry.id});
+ cardPosition++;
+ renderCard();
+};
 let quizRenderVersion=0;
 function resetQuizView(){
  quizRenderVersion++;$("startQuiz").disabled=false;$("quizScope").disabled=false;
@@ -362,97 +423,132 @@ function resetQuizView(){
  $("quizBody").innerHTML='<div class="flash muted">範囲を選んで「クイズ開始」を押してください。</div>';
 }
 function saveQuiz(){
- session().quiz={queue,current:quizCurrent,order:quizOrder,answered:quizAnswered,total:quizTotal,seen:[...firstSeen],wrong:[...wrongOnce],right:firstRight,scope:$("quizScope").value,freeDraft,freeRevealed};return save();
+ const current=quizAttempts[quizPosition]?.id??null;
+ session().quiz={queue,current,attempts:quizAttempts,position:quizPosition,total:quizTotal,wrong:[...wrongOnce],right:firstRight,scope:$("quizScope").value};
+ return save();
 }
 function restoreQuiz(){
  quizRenderVersion++;$("startQuiz").disabled=false;$("quizScope").disabled=false;
  const saved=session().quiz;
  if(!saved){resetQuizView();return}
  const ids=new Set(selected().items.map(x=>x.id));
- queue=saved.queue.filter(id=>ids.has(id));quizCurrent=saved.current;
- quizOrder=saved.order;quizAnswered=saved.answered;quizTotal=saved.total;freeDraft=saved.freeDraft||'';freeRevealed=!!saved.freeRevealed;
- firstSeen=new Set(saved.seen);wrongOnce=new Set(saved.wrong);firstRight=saved.right;
+ const attempts=saved.attempts??(saved.current?[{
+  id:saved.current,order:saved.order,answered:saved.answered,freeDraft:saved.freeDraft||'',freeRevealed:!!saved.freeRevealed
+ }]:[]);
+ [quizAttempts,quizPosition]=restoreStudyEntries(attempts,saved.position??0,ids);
+ queue=saved.queue.filter(id=>ids.has(id));quizTotal=saved.total;
+ wrongOnce=new Set(saved.wrong);firstRight=saved.right;
  $("quizScope").value=saved.scope;
- if(quizCurrent&&!ids.has(quizCurrent))return nextQuiz();
- if(quizAnswered!==null&&selected().items.find(x=>x.id===quizCurrent)?.responseMode==='free')return nextQuiz();
+ if(!quizAttempts[quizPosition]&&queue.length)return loadNextQuizAttempt();
  renderQuiz();
 }
 function startQuiz(){
  queue=filter($("quizScope").value).map(x=>x.id).sort(()=>Math.random()-.5);
  quizTotal=queue.length;
- firstSeen.clear();
+ quizAttempts=[];quizPosition=-1;
  wrongOnce.clear();
  firstRight=0;
  nextQuiz();
 }
-async function nextQuiz(){
- const version=++quizRenderVersion;
- $("quizBody").querySelectorAll("button").forEach(button=>button.disabled=true);
- quizCurrent=queue.shift()||null;quizOrder=[0,1,2,3].sort(()=>Math.random()-.5);quizAnswered=null;freeDraft='';freeRevealed=false;
- if(quizCurrent)firstSeen.add(quizCurrent);
- const setId=active;$("startQuiz").disabled=true;$("quizScope").disabled=true;await saveQuiz();if(version!==quizRenderVersion||active!==setId)return;$("startQuiz").disabled=false;$("quizScope").disabled=false;renderQuiz();
+function nextQuiz(){
+ quizPosition++;
+ if(quizPosition===quizAttempts.length&&queue.length)return loadNextQuizAttempt();
+ return saveQuizView();
+}
+function loadNextQuizAttempt(){
+ quizAttempts.push({id:queue.shift(),order:[0,1,2,3].sort(()=>Math.random()-.5),answered:null,freeDraft:'',freeRevealed:false});
+ return saveQuizView();
+}
+async function saveQuizView(keepChoices=false){
+ const version=++quizRenderVersion,setId=active;
+ const scrollTop=keepChoices?$("quizAnswers").scrollTop:0;
+ const focused=$("quizBody").contains(document.activeElement)?document.activeElement:null;
+ $("quizBody").querySelectorAll("button,textarea").forEach(control=>control.disabled=true);
+ $("startQuiz").disabled=true;$("quizScope").disabled=true;
+ await saveQuiz();
+ if(version!==quizRenderVersion||active!==setId)return;
+ $("startQuiz").disabled=false;$("quizScope").disabled=false;renderQuiz();
+ if(keepChoices)$("quizAnswers").scrollTop=scrollTop;
+ if(focused){
+  const replacement=$(focused.id);
+  const target=replacement&&!replacement.disabled?replacement:$("quizBody").querySelector('.quiz-navigation .primary');
+  target?.focus({preventScroll:true});
+ }
 }
 function renderQuizProgress(){
- const pending=new Set(queue);if(quizCurrent&&quizAnswered!==true)pending.add(quizCurrent);
+ const latest=new Map(quizAttempts.map(attempt=>[attempt.id,attempt.answered]));
+ const pending=new Set(queue);
+ for(const [id,answered] of latest)if(answered!==true)pending.add(id);
  const position=Math.max(0,quizTotal-pending.size);
  $("quizCount").textContent=position+" / "+quizTotal;
  $("quizBar").style.width=(quizTotal?100*position/quizTotal:0)+"%";
 }
+function quizNavigation(forward){
+ return '<div class="actions quiz-navigation"><button id="quizBack"'+(quizPosition>0?'':' disabled')+'>戻る</button>'+forward+'</div>';
+}
 function renderQuiz(){
- const id=quizCurrent,x=selected()?.items.find(a=>a.id===id);
+ const attempt=quizAttempts[quizPosition],x=selected()?.items.find(a=>a.id===attempt?.id);
  renderQuizProgress();
  if(!x){
   if(!quizTotal){
    $("quizBody").innerHTML='<div class="flash muted">出題できるカードがありません。</div>';
    return;
   }
-  $("quizBody").innerHTML='<div class="flash"><strong>クイズ完了</strong><span>初回正解 '+firstRight+' / '+firstSeen.size+'</span></div><div class="actions"><button class="primary" id="restart">もう一度</button></div>';
+  $("quizBody").innerHTML='<div class="flash"><strong>クイズ完了</strong><span>初回正解 '+firstRight+' / '+quizTotal+'</span></div>'+quizNavigation('<button class="primary" id="restart">もう一度</button>');
   $("restart").onclick=startQuiz;
-  return;
+ }else{
+  const free=x.responseMode==='free',answered=attempt.answered!==null;
+  const choices=free?'':attempt.order.map(i=>'<button class="choice" data-answer="'+i+'">'+esc(x.options[i])+'</button>').join("");
+  const forwardId=answered?'continue':'quizNext';
+  $("quizBody").innerHTML='<div class="flash" id="feedback" aria-live="polite"><strong>'+esc(x.question)+'</strong>'+imageMarkup(x.image,x.term)+'</div><div class="quiz-controls"><div class="quiz-choices" id="quizAnswers">'+choices+'</div>'+quizNavigation('<button class="primary" id="'+forwardId+'">進む</button>')+'</div>';
+  $(forwardId).onclick=nextQuiz;
+  if(free){
+   if(attempt.freeRevealed||answered)renderFreeAnswer(x,attempt);
+   else renderFreeInput(attempt);
+  }else if(answered)renderQuizFeedback(x,attempt);
+  else $("quizAnswers").querySelectorAll('[data-answer]').forEach(button=>button.onclick=()=>{
+   attempt.selection=+button.dataset.answer;
+   answerQuiz(x,attempt,attempt.selection===x.answer);
+  });
  }
- firstSeen.add(id);
- const order=quizOrder;
- $("quizBody").innerHTML='<div class="flash" id="feedback" aria-live="polite"><strong>'+esc(x.question)+'</strong>'+imageMarkup(x.image,x.term)+'</div><div class="quiz-choices" id="quizAnswers">'+(x.responseMode==='free'?[]:order).map(i=>'<button class="choice" data-answer="'+i+'">'+esc(x.options[i])+'</button>').join("")+'</div>';
- if(x.responseMode==='free'){
- const answers=$("quizAnswers");answers.className='free-answer-form';
+ $("quizBack").onclick=()=>{quizPosition--;saveQuizView()};
+}
+function renderFreeInput(attempt){
+ const answers=$("quizAnswers");
+ answers.className='free-answer-form';
  answers.innerHTML='<label for="freeAnswer">回答</label><textarea id="freeAnswer" rows="3" autocapitalize="off" spellcheck="false"></textarea><button id="revealFreeAnswer" class="primary">正解例を見る</button>';
- $("freeAnswer").value=freeDraft;
- $("freeAnswer").oninput=e=>{freeDraft=e.target.value;saveQuiz()};
- $("revealFreeAnswer").onclick=async()=>{const setId=active,current=quizCurrent,version=quizRenderVersion;freeRevealed=true;$("revealFreeAnswer").disabled=true;await saveQuiz();if(active===setId&&quizCurrent===current&&version===quizRenderVersion)renderFreeAnswer(x)};
- if(freeRevealed)renderFreeAnswer(x);
- }else $("quizBody").querySelectorAll('[data-answer]').forEach(button=>button.onclick=()=>answerQuiz(x,+button.dataset.answer===x.answer));
- if(quizAnswered!==null)renderQuizFeedback(x,quizAnswered);
+ $("freeAnswer").value=attempt.freeDraft;
+ $("freeAnswer").oninput=e=>{attempt.freeDraft=e.target.value;saveQuiz()};
+ $("revealFreeAnswer").onclick=()=>{attempt.freeRevealed=true;saveQuizView()};
 }
-function freeAnswerContent(x){
- return (freeDraft?'<p class="detail">回答：'+esc(freeDraft)+'</p>':'')+'<p class="detail">'+esc(x.answerText)+'</p>'+imageMarkup(x.image,x.term)+imageMarkup(x.answerImage,x.meaning)+'<p class="detail">'+esc(x.explanation)+'</p>';
+function renderFreeAnswer(x,attempt){
+ $("feedback").innerHTML='<strong>正解例</strong><div>'+(attempt.freeDraft?'<p class="detail">回答：'+esc(attempt.freeDraft)+'</p>':'')+'<p class="detail">'+esc(x.answerText)+'</p>'+imageMarkup(x.image,x.term)+imageMarkup(x.answerImage,x.meaning)+'<p class="detail">'+esc(x.explanation)+'</p></div>';
+ const answers=$("quizAnswers");
+ answers.className='actions';
+ answers.innerHTML='<button data-self-grade="wrong">不正解</button><button data-self-grade="good" class="primary">正解</button>';
+ for(const button of answers.querySelectorAll('[data-self-grade]')){
+  const good=button.dataset.selfGrade==='good';
+  if(attempt.answered===null)button.onclick=()=>answerQuiz(x,attempt,good);
+  else markAnswer(button,false,good===attempt.answered,good===attempt.answered?'選択した評価':'');
+ }
 }
-function renderFreeAnswer(x){
- $("feedback").innerHTML='<strong>正解例</strong><div>'+freeAnswerContent(x)+'</div>';
- $("quizAnswers").className='actions';$("quizAnswers").innerHTML='<button data-self-grade="wrong">不正解</button><button data-self-grade="good" class="primary">正解</button>';
- $("quizAnswers").querySelectorAll('[data-self-grade]').forEach(button=>button.onclick=()=>answerQuiz(x,button.dataset.selfGrade==='good'));
-}
-async function answerQuiz(x,ok){
- if(quizAnswered!==null)return;
- const setId=active,current=quizCurrent,version=quizRenderVersion;
- $("quizAnswers").querySelectorAll('button,textarea').forEach(control=>control.disabled=true);
+function answerQuiz(x,attempt,ok){
+ if(attempt.answered!==null)return;
  if(ok&&!wrongOnce.has(x.id))firstRight++;
  if(!ok){wrongOnce.add(x.id);queue.push(x.id)}
- grade(x.id,ok?'good':'wrong','quiz');quizAnswered=ok;
- if(x.responseMode==='free'){await nextQuiz();return}
- await saveQuiz();if(active===setId&&quizCurrent===current&&version===quizRenderVersion)renderQuizFeedback(x,ok);
+ grade(x.id,ok?'good':'wrong','quiz');attempt.answered=ok;
+ if(x.responseMode==='free')return nextQuiz();
+ return saveQuizView(true);
 }
-function renderQuizFeedback(x,ok){
-  renderQuizProgress();
-  $("feedback").innerHTML='<strong>'+(ok?'正解':'不正解 — 後で再出題')+'</strong><div>'+(x.responseMode==='free'?freeAnswerContent(x):'<p>正解：'+esc(x.options[x.answer])+'</p>'+imageMarkup(x.image,x.term)+imageMarkup(x.answerImage,x.meaning)+'<p class="detail">'+esc(x.explanation)+'</p>')+'</div>';
-  $("feedback").scrollTop=0;
-  const answers=$("quizAnswers");
-  answers.className="actions";
-  answers.innerHTML='<button id="continue" class="primary">次へ</button>';
-  $("continue").onclick=()=>{
-   $("continue").disabled=true;nextQuiz();
-   $("quizBody").querySelector("button")?.focus({preventScroll:true});
-  };
+function renderQuizFeedback(x,attempt){
+ $("feedback").innerHTML='<strong>'+(attempt.answered?'正解':'不正解 — 後で再出題')+'</strong><div><p>'+esc(x.question)+'</p>'+imageMarkup(x.image,x.term)+imageMarkup(x.answerImage,x.meaning)+'<p class="detail">'+esc(x.explanation)+'</p></div>';
+ for(const button of $("quizAnswers").querySelectorAll('[data-answer]')){
+  const index=+button.dataset.answer;
+  const correct=index===x.answer;
+  const chosen=index===(attempt.selection??(attempt.answered?x.answer:null));
+  markAnswer(button,correct,chosen,correct?(chosen?'正解・選択した回答':'正解'):(chosen?'選択した回答':''));
  }
+}
 $("startQuiz").onclick=startQuiz;
 $("quizScope").onchange=()=>{delete session().quiz;save();resetQuizView()};
 function showSet(id){editingSet=id||"";let s=state.sets.find(x=>x.id===id);$("sTitle").value=s?.title||"";$("sDesc").value=s?.description||"";$("setDialog").showModal()}
