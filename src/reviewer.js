@@ -200,27 +200,27 @@ function filter(scope){
 function grade(id,result,mode='cards'){let p={...progress(active,id)};p.attempts++;const counter=mode==='quiz'?'quizAttempts':'cardAttempts';p[counter]=(Number.isFinite(p[counter])?p[counter]:0)+1;if(result==="wrong"){p.lapses++;p.reps=0;p.interval=1}else{p.correct++;p.reps=result==="good"?p.reps+1:Math.max(1,p.reps);const days=result==="good"?[1,3,7,14,30,60]:[1,3,7,14];p.interval=days[Math.min(days.length-1,p.reps-1)]}const now=Date.now();selected().lastStudiedAt=now;p.due=now+DAY*p.interval;state.progress[pkey(active,id)]=p;renderSets()}
 
 let navigationVersion=0;
-function tab(name,afterRender){
+async function tab(name,afterRender){
  const version=++navigationVersion;
  if(name!=="sets"&&!selected())name="sets";
  const target=$(name);
 
- const switchScreen=async()=>{
-  if(name==="sets")renderSets();
-  if(name==="list")renderList();
-  if(name==="cards")await buildCards();
-  if(name==="quiz"){$("quizTitle").textContent=selected().title;await restoreQuiz();}
-  if(version!==navigationVersion)return;
-  if(name!=='sets'&&!selected()){tab('sets');return}
-  document.querySelectorAll(".screen").forEach(v=>v.classList.toggle("active",v===target));
-  document.body.classList.toggle('study-mode',name==='cards'||name==='quiz');
-  setSidebar(!document.body.classList.contains('sidebar-hidden'),false);
-  state.view={setId:active,screen:name};save();
-  $("workspaceTitle").textContent=name==="sets"?"Reviewer":selected().title;
-  renderSets();$("workspace").scrollTop=0;
-  afterRender?.();
- };
- return switchScreen();
+ if(name==="sets")renderSets();
+ if(name==="list")renderList();
+ if(name==="cards")await buildCards();
+ if(name==="quiz"){
+  $("quizTitle").textContent=selected().title;
+  await restoreQuiz();
+ }
+ if(version!==navigationVersion)return;
+ if(name!=='sets'&&!selected()){tab('sets');return}
+ document.querySelectorAll(".screen").forEach(screen=>screen.classList.toggle("active",screen===target));
+ document.body.classList.toggle('study-mode',name==='cards'||name==='quiz');
+ setSidebar(!document.body.classList.contains('sidebar-hidden'),false);
+ state.view={setId:active,screen:name};save();
+ $("workspaceTitle").textContent=name==="sets"?"Reviewer":selected().title;
+ renderSets();$("workspace").scrollTop=0;
+ afterRender?.();
 }
 $("back").onclick=$("homeLink").onclick=()=>tab("sets");
 document.querySelectorAll("[data-detail-back]").forEach(b=>b.onclick=()=>tab("list"));
