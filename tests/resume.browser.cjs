@@ -64,6 +64,19 @@ const assert=require('node:assert/strict');
  assert.equal(await page.locator('[data-answer="1"][data-selected]:disabled').count(),1);
  const background=button=>button.evaluate(el=>getComputedStyle(el).backgroundColor);
  assert.notEqual(await background(page.locator('[data-answer="0"]')),await background(page.locator('[data-answer="1"]')));
+ await page.locator('#startQuiz').click();
+ for(let i=0;i<3;i++){
+  await page.locator('#quizNext').click();
+ }
+ await page.locator('#restart').waitFor();
+ assert.match(await page.locator('#quizBody').innerText(),/未回答の問題があります/);
+ assert.equal(await page.locator('#quizCount').innerText(),'0 / 3');
+ await page.reload();
+ assert.match(await page.locator('#quizBody').innerText(),/未回答の問題があります/);
+ await page.locator('#quizBack').click();
+ await page.locator('[data-answer="0"]').click();
+ await page.locator('#continue').waitFor();
+ assert.equal(await page.locator('#quizCount').innerText(),'1 / 3');
  assert.deepEqual(errors,[]);
  console.log('PASS: shuffled flashcard position/reveal/remaining deck and quiz question/options/feedback/retries/results survive reload without double grading');
  }finally{await browser.close()}

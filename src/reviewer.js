@@ -483,7 +483,9 @@ function renderQuiz(){
    $("quizBody").innerHTML='<div class="flash muted">出題できるカードがありません。</div>';
    return;
   }
-  $("quizBody").innerHTML='<div class="flash"><strong>クイズ完了</strong><span>初回正解 '+firstRight+' / '+quizTotal+'</span></div>'+quizNavigation('<button class="primary" id="restart">もう一度</button>');
+  const unanswered=quizAttempts.some(attempt=>attempt.answered===null);
+  const summary=unanswered?'未回答の問題があります':'クイズ完了';
+  $("quizBody").innerHTML='<div class="flash"><strong>'+summary+'</strong><span>初回正解 '+firstRight+' / '+quizTotal+'</span></div>'+quizNavigation('<button class="primary" id="restart">もう一度</button>');
   $("restart").onclick=startQuiz;
  }else{
   const free=x.responseMode==='free',answered=attempt.answered!==null;
@@ -754,9 +756,10 @@ function placeMenu(menu){
  const opensBelow=menu.offsetHeight<=belowSpace||belowSpace>=aboveSpace;
  menu.style.maxHeight=Math.min(innerHeight-16,Math.max(80,opensBelow?belowSpace:aboveSpace))+'px';
  const height=menu.offsetHeight;
- const left=Math.max(8,Math.min(rect.right-width,innerWidth-width-8));
+ const side=menu.scrollHeight>belowSpace&&rect.right+6+width<=innerWidth-8;
+ const left=side?rect.right+6:Math.max(8,Math.min(rect.right-width,innerWidth-width-8));
  const below=rect.bottom+6,above=rect.top-height-6;
- const top=Math.max(8,Math.min(opensBelow?below:above,innerHeight-height-8));
+ const top=Math.max(8,Math.min(side?rect.top:opensBelow?below:above,innerHeight-height-8));
  menu.style.left=left+'px';menu.style.top=top+'px';
  menu.style.transformOrigin=(rect.right-left)+'px '+(top>=rect.bottom?'top':'bottom');
 }
